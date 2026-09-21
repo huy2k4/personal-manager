@@ -350,6 +350,89 @@ body {
 }
 
 
+/* ─── Work Project Card Styles ────────────────────────────────── */
+.project-tabs {
+  display: flex;
+  background-color: var(--color-surface-2);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  gap: 2px;
+  margin-bottom: var(--space-3);
+}
+
+.project-tab-btn {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-2);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.project-tab-btn.active {
+  background-color: var(--color-surface);
+  color: var(--color-text-1);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.accordion-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-2);
+  overflow: hidden;
+  transition: border-color 150ms ease;
+}
+
+.accordion-item + .accordion-item {
+  margin-top: var(--space-2);
+}
+
+.accordion-trigger {
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.accordion-content {
+  padding: 0 12px 10px 12px;
+  font-size: 12px;
+  color: var(--color-text-2);
+  line-height: 1.5;
+  border-top: 1px dashed var(--color-border);
+  padding-top: 8px;
+}
+
+.term-badge {
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 /* ─── Task item ──────────────────────────────────────────────── */
 .task-item {
   display: flex;

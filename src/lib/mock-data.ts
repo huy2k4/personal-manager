@@ -7,37 +7,38 @@ import type {
   CryptoAsset,
   GymSession,
   NutritionToday,
+  WorkProject,
 } from '@/types';
 
 export const todayTasks: Task[] = [
   { id: '1', title: 'Daily standup Maersk', time: '09:00', category: 'work', done: true, priority: 'high' },
   { id: '2', title: 'Review PR #42 — backend API', time: '10:00', category: 'work', done: false, priority: 'high' },
-  { id: '3', title: 'Fix bug dashboard chart freelance A', time: '13:00', category: 'freelance', done: false, priority: 'high' },
-  { id: '4', title: 'Dạy Scratch — Khối 4A buổi 7', time: '15:30', category: 'teach', done: false, priority: 'medium' },
-  { id: '5', title: 'Duolingo Japanese — 10 phút', time: '20:00', category: 'study', done: false, priority: 'low' },
-  { id: '6', title: 'Gym — Push day', time: '21:00', category: 'personal', done: false, priority: 'medium' },
+  { id: '3', title: 'Họp review mockup web Betonamu', time: '10:00', category: 'freelance', done: false, priority: 'high' },
+  { id: '4', title: 'Liên lạc anh ABC chốt HĐ Nam Khánh', time: '20:00', category: 'freelance', done: false, priority: 'high' },
+  { id: '5', title: 'Duolingo Japanese — 10 phút', time: '21:00', category: 'study', done: false, priority: 'low' },
+  { id: '6', title: 'Gym — Push day', time: '21:30', category: 'personal', done: false, priority: 'medium' },
 ];
 
 export const contracts: Contract[] = [
   {
     id: 'f1',
-    client: 'StartupX',
-    project: 'Admin Dashboard',
+    client: 'Betonamu',
+    project: 'Web Tiếng Nhật',
     deadline: '2026-10-15',
     progress: 65,
     status: 'active',
-    earned: 13000000,
-    total: 20000000,
+    earned: 15000000,
+    total: 22000000,
   },
   {
     id: 'f2',
-    client: 'TechVN',
-    project: 'Mobile App UI',
+    client: 'Nam Khánh',
+    project: 'Web Xuất Khẩu Chuối',
     deadline: '2026-09-30',
-    progress: 90,
+    progress: 85,
     status: 'review',
-    earned: 8500000,
-    total: 9000000,
+    earned: 12000000,
+    total: 15000000,
   },
 ];
 
@@ -98,3 +99,90 @@ export const nutritionToday: NutritionToday = {
   fat: 52,
   fatGoal: 70,
 };
+
+/* ─── 3 Work Cards (Maersk, Betonamu, Nam Khánh) ─── */
+export const workProjects: WorkProject[] = [
+  {
+    id: 'maersk',
+    name: 'Maersk',
+    tagline: 'Công việc chính',
+    type: 'primary',
+    accentColor: '#2563EB',
+    schedules: [
+      { id: 'm1', title: 'Daily standup Maersk', time: '09:00', date: '21/09', done: true },
+      { id: 'm2', title: 'Review PR #42 — Backend Tracking API', time: '10:30', date: '21/09', done: false },
+      { id: 'm3', title: 'Sprint Planning & Backlog Refinement', time: '14:00', date: '23/09', done: false },
+      { id: 'm4', title: 'Deploy Release v2.4 lên Staging', time: '17:00', date: '25/09', done: false },
+    ],
+    glossary: [
+      { id: 'mg1', term: 'EDI', definition: 'Chuẩn trao đổi dữ liệu điện tử giữa hãng tàu và đối tác logistics.' },
+      { id: 'mg2', term: 'B/L (Bill of Lading)', definition: 'Vận đơn đường biển, chứng từ sở hữu và vận chuyển hàng hóa quốc tế.' },
+      { id: 'mg3', term: 'Demurrage', definition: 'Phí lưu bãi/lưu container tại cảng khi vượt quá số ngày miễn phí.' },
+    ],
+  },
+  {
+    id: 'betonamu',
+    name: 'Betonamu',
+    tagline: 'Project Web Tiếng Nhật',
+    type: 'project',
+    accentColor: '#DC2626',
+    schedules: [
+      { id: 'b1', title: 'Họp review UI mockup với PM bên Nhật', time: '10:00', date: '22/09', done: false, note: 'Chuẩn bị prototype Figma' },
+      { id: 'b2', title: 'Hoàn thành layout module bài học đa ngôn ngữ', time: '18:00', date: '24/09', done: false },
+      { id: 'b3', title: 'Bàn giao bản Test nội bộ (Alpha release)', time: '12:00', date: '28/09', done: false },
+    ],
+    guides: [
+      {
+        id: 'bg1',
+        question: 'Quy chuẩn font chữ và hiển thị tiếng Nhật',
+        answer: 'Sử dụng font Noto Sans JP hoặc Hiragino Kaku Gothic làm fallback; set line-height tối thiểu 1.7 để tránh dính chữ Kanji. Luôn kiểm tra wrap từ (word-break: keep-all).',
+      },
+      {
+        id: 'bg2',
+        question: 'Xử lý Ruby text (Furigana) trong giao diện',
+        answer: 'Dùng thẻ HTML <ruby><rt>...</rt></ruby> chuẩn hóa cho phần phiên âm trên đầu Kanji, chú ý test responsive trên mobile để không làm nhảy độ cao dòng.',
+      },
+      {
+        id: 'bg3',
+        question: 'Cấu trúc chuyển ngữ i18n',
+        answer: 'Tách riêng file ja.json và vi.json theo namespace màn hình, tuyệt đối không hardcode text tiếng Nhật trực tiếp trong component.',
+      },
+    ],
+    glossary: [
+      { id: 'bt1', term: '仕様書 (Shiyousho)', definition: 'Bản tài liệu đặc tả yêu cầu kỹ thuật và nghiệp vụ của dự án.' },
+      { id: 'bt2', term: '納品 (Nouhin)', definition: 'Bàn giao sản phẩm hoặc deliverables cho khách hàng nghiệm thu.' },
+      { id: 'bt3', term: '受入テスト (Ukeire Test)', definition: 'Acceptance Testing — Kiểm thử tiếp nhận người dùng cuối trước khi release.' },
+      { id: 'bt4', term: '工数 (Kousuu)', definition: 'Khối lượng công việc dự tính (tính theo Man-Month hoặc Man-Day).' },
+    ],
+  },
+  {
+    id: 'nam-khanh',
+    name: 'Nam Khánh',
+    tagline: 'Project Web Xuất Khẩu Chuối',
+    type: 'project',
+    accentColor: '#16A34A',
+    schedules: [
+      { id: 'nk1', title: 'Liên lạc với anh ABC để chốt hợp đồng', time: '20:00', date: '22/09', done: false, note: 'Chốt phạm vi tính năng & mốc thanh toán đợt 1' },
+      { id: 'nk2', title: 'Gửi demo Dashboard khách hàng & tracking đơn', time: '16:00', date: '25/09', done: false },
+      { id: 'nk3', title: 'Chốt bảng quy cách đóng gói và xuất khẩu', time: '11:00', date: '28/09', done: false },
+    ],
+    guides: [
+      {
+        id: 'nkg1',
+        question: 'Cách làm dashboard khách hàng',
+        answer: 'Dashboard khách hàng gồm 3 khối trọng tâm: (1) Trạng thái thời gian thực các lô chuối đang vận chuyển, (2) Biểu đồ nhiệt độ container lạnh Reefer (duy trì 13.5°C), (3) Khu vực tải file chứng từ kiểm dịch Phytosanitary và B/L trực tiếp.',
+      },
+      {
+        id: 'nkg2',
+        question: 'Quy trình kiểm định và phân loại chuối xuất cảng',
+        answer: 'Kiểm tra độ cong tiêu chuẩn, đường kính quả theo thước kẹp chuyên dụng, màu sắc vỏ theo bảng chuẩn xuất khẩu trước khi dán tem truy xuất nguồn gốc.',
+      },
+    ],
+    glossary: [
+      { id: 'nkt1', term: 'TypeB', definition: 'Loại 2, kích thước nhỏ hơn (khoảng 16-19cm), dành cho thị trường thứ cấp.' },
+      { id: 'nkt2', term: 'TypeA', definition: 'Loại 1, chuẩn xuất khẩu cao cấp (quả đều, không tì vết, chiều dài >20cm).' },
+      { id: 'nkt3', term: 'Reefer Container', definition: 'Container lạnh chuyên dụng duy trì nhiệt độ bảo quản chuối tươi ở 13°C - 14°C trong suốt hải trình.' },
+      { id: 'nkt4', term: 'Phytosanitary', definition: 'Giấy chứng nhận kiểm dịch thực vật bắt buộc khi thông quan hàng nông sản sang nước nhập khẩu.' },
+    ],
+  },
+];

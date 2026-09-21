@@ -5,12 +5,10 @@ import {
   Clock,
   Flame,
   Dumbbell,
-  CheckCircle2,
-  TrendingUp,
   Briefcase,
   ChevronRight,
-  BookOpen,
   ArrowUpRight,
+  Calendar,
 } from 'lucide-react';
 import type { NavId } from '@/components/layout/BottomNav';
 import {
@@ -20,7 +18,7 @@ import {
   cryptoAssets,
   gymSessions,
   nutritionToday,
-  lessons,
+  workProjects,
 } from '@/lib/mock-data';
 import ProgressBar from '@/components/ui/ProgressBar';
 
@@ -58,7 +56,7 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
               <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>
                 {doneTasks}/{totalTasks}
               </span>
-              <span className="text-xs text-3">task hoàn thành ({taskPercent}%)</span>
+              <span className="text-xs text-3">mục xong ({taskPercent}%)</span>
             </div>
           </div>
           <button
@@ -66,7 +64,7 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
             onClick={() => onNavigate('work')}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}
           >
-            Chi tiết việc <ChevronRight size={14} />
+            Tab Việc <ChevronRight size={14} />
           </button>
         </div>
         <ProgressBar value={taskPercent} />
@@ -74,15 +72,15 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
 
       {/* ─── 2. Khối KPI Thống kê 2x2 ─── */}
       <div className="bento-grid" style={{ padding: 0 }}>
-        {/* KPI 1: Thu nhập Freelance */}
-        <div className="kpi-card" onClick={() => onNavigate('finance')} style={{ cursor: 'pointer' }}>
+        {/* KPI 1: 3 Dự án Việc */}
+        <div className="kpi-card" onClick={() => onNavigate('work')} style={{ cursor: 'pointer' }}>
           <div className="kpi-top">
-            <span className="kpi-title">Freelance</span>
+            <span className="kpi-title">Dự án Việc</span>
             <Briefcase size={14} color="var(--color-accent)" />
           </div>
           <div>
-            <div className="kpi-val">{(totalFreelanceEarned / 1_000_000).toFixed(1)}M</div>
-            <div className="kpi-sub">Đã nhận / {(totalFreelanceGoal / 1_000_000).toFixed(0)}M VND</div>
+            <div className="kpi-val">{workProjects.length} Active</div>
+            <div className="kpi-sub">Maersk • Betonamu • Nam Khánh</div>
           </div>
         </div>
 
@@ -133,14 +131,34 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="card-title" style={{ margin: 0 }}>
               <AlertTriangle size={15} color="var(--color-danger)" />
-              Cảnh báo & Cần chú ý
+              Cảnh báo & Lịch hẹn quan trọng
             </span>
           </div>
-          <span className="badge badge-danger" style={{ fontWeight: 600 }}>4 cảnh báo</span>
+          <span className="badge badge-danger" style={{ fontWeight: 600 }}>4 nhắc nhở</span>
         </div>
 
         <div className="alert-list">
-          {/* Cảnh báo 1: Nguy cơ đứt Streak Tiếng Nhật */}
+          {/* Cảnh báo 1: Lịch chốt hợp đồng Nam Khánh 20h 22/9 */}
+          <div className="alert-item warn">
+            <Calendar size={18} color="var(--color-warn)" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div className="alert-content">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className="alert-title">Lịch hẹn Nam Khánh — Xuất khẩu chuối</span>
+                <span className="badge badge-warn" style={{ fontSize: 10 }}>20:00 22/09</span>
+              </div>
+              <p className="alert-desc">
+                <strong>Liên lạc với anh ABC</strong> để chốt hợp đồng website. Chuẩn bị tài liệu & thống nhất phương án triển khai.
+              </p>
+              <button
+                className="alert-action-btn"
+                onClick={() => onNavigate('work')}
+              >
+                Mở card Nam Khánh <ChevronRight size={12} />
+              </button>
+            </div>
+          </div>
+
+          {/* Cảnh báo 2: Nguy cơ đứt Streak Tiếng Nhật */}
           {jaLang && !jaLang.todayDone && (
             <div className="alert-item danger">
               <Flame size={18} color="var(--color-danger)" style={{ flexShrink: 0, marginTop: 2 }} />
@@ -162,42 +180,22 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
             </div>
           )}
 
-          {/* Cảnh báo 2: Lịch dạy Scratch hôm nay */}
+          {/* Cảnh báo 3: Review UI Mockup Betonamu */}
           <div className="alert-item accent">
             <Clock size={18} color="var(--color-accent)" style={{ flexShrink: 0, marginTop: 2 }} />
             <div className="alert-content">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className="alert-title">Lịch dạy Scratch sắp diễn ra</span>
-                <span className="badge badge-accent" style={{ fontSize: 10 }}>15:30</span>
+                <span className="alert-title">Họp review UI Web Betonamu</span>
+                <span className="badge badge-accent" style={{ fontSize: 10 }}>10:00 22/09</span>
               </div>
               <p className="alert-desc">
-                {lessons[0].student} — <strong>{lessons[0].topic}</strong>. Chuẩn bị slide và bài tập mẫu trước 15:15.
+                Review mockup với PM bên Nhật. Kiểm tra lại bản vẽ Figma và ghi chú các thuật ngữ tiếng Nhật trong Specification.
               </p>
               <button
                 className="alert-action-btn"
                 onClick={() => onNavigate('work')}
               >
-                Mở tab Việc <ChevronRight size={12} />
-              </button>
-            </div>
-          </div>
-
-          {/* Cảnh báo 3: Hạn chót Freelance TechVN */}
-          <div className="alert-item warn">
-            <Briefcase size={18} color="var(--color-warn)" style={{ flexShrink: 0, marginTop: 2 }} />
-            <div className="alert-content">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className="alert-title">Hạn hợp đồng Freelance TechVN</span>
-                <span className="badge badge-warn" style={{ fontSize: 10 }}>30/09</span>
-              </div>
-              <p className="alert-desc">
-                Dự án <strong>Mobile App UI</strong> đạt 90% tiến độ, đang chờ phản hồi review để chốt bàn giao giai đoạn cuối.
-              </p>
-              <button
-                className="alert-action-btn"
-                onClick={() => onNavigate('work')}
-              >
-                Mở hợp đồng Freelance <ChevronRight size={12} />
+                Mở card Betonamu <ChevronRight size={12} />
               </button>
             </div>
           </div>

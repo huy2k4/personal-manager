@@ -1,20 +1,14 @@
 'use client';
 
-import TodayCard from '@/components/cards/TodayCard';
-import FreelanceCard from '@/components/cards/FreelanceCard';
-import TeachCard from '@/components/cards/TeachCard';
+import { workProjects } from '@/lib/mock-data';
+import WorkProjectCard from '@/components/cards/WorkProjectCard';
 
 export default function WorkView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-      {/* 1. Công việc hôm nay */}
-      <TodayCard />
-
-      {/* 2. Hợp đồng Freelance */}
-      <FreelanceCard />
-
-      {/* 3. Lịch dạy học Scratch */}
-      <TeachCard />
+      {workProjects.map((project) => (
+        <WorkProjectCard key={project.id} project={project} />
+      ))}
     </div>
   );
 }
