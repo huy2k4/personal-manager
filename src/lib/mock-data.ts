@@ -105,14 +105,30 @@ export const workProjects: WorkProject[] = [
   {
     id: 'maersk',
     name: 'Maersk',
-    tagline: 'Công việc chính',
+    tagline: '',
     type: 'primary',
-    accentColor: '#2563EB',
     schedules: [
       { id: 'm1', title: 'Daily standup Maersk', time: '09:00', date: '21/09', done: true },
       { id: 'm2', title: 'Review PR #42 — Backend Tracking API', time: '10:30', date: '21/09', done: false },
       { id: 'm3', title: 'Sprint Planning & Backlog Refinement', time: '14:00', date: '23/09', done: false },
       { id: 'm4', title: 'Deploy Release v2.4 lên Staging', time: '17:00', date: '25/09', done: false },
+    ],
+    guides: [
+      {
+        id: 'mg1',
+        question: 'Quy chuẩn PR và commit message Maersk',
+        answer: 'Tuân thủ Conventional Commits: feat(tracking): description hoặc fix(api): description. Mọi PR cần tối thiểu 2 approvals và pass toàn bộ CI pipeline trước khi merge.',
+      },
+      {
+        id: 'mg2',
+        question: 'Cấu hình VPN và truy cập nội bộ',
+        answer: 'Kết nối qua Cisco AnyConnect với MFA chứng thực qua Microsoft Authenticator. Domain nội bộ staging: *.internal.maersk.com.',
+      },
+      {
+        id: 'mg3',
+        question: 'Quy trình xử lý sự cố tracking API',
+        answer: 'Kiểm tra log trên Datadog service "ocean-tracking-api", verify message queue trên Azure Service Bus và báo cáo cho Tech Lead nếu độ trễ vượt 200ms.',
+      },
     ],
     glossary: [
       { id: 'mg1', term: 'EDI', definition: 'Chuẩn trao đổi dữ liệu điện tử giữa hãng tàu và đối tác logistics.' },

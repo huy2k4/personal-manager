@@ -51,25 +51,13 @@ export default function WorkProjectCard({ project }: WorkProjectCardProps) {
     <div className="card bento-full">
       {/* ─── Header Card ─── */}
       <div className="card-header" style={{ marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              backgroundColor: project.accentColor ?? 'var(--color-accent)',
-            }}
-          />
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>
-                {project.name}
-              </span>
-              <Badge variant={project.type === 'primary' ? 'accent' : 'neutral'}>
-                {project.tagline}
-              </Badge>
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>
+            {project.name}
+          </span>
+          {project.tagline ? (
+            <Badge variant="neutral">{project.tagline}</Badge>
+          ) : null}
         </div>
 
         <span className="text-xs text-3">
