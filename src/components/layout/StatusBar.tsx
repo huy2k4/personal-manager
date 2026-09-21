@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
+import type { NavId } from '@/components/layout/BottomNav';
 
 const DAY_NAMES = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
 const MONTH_NAMES = [
@@ -9,7 +10,19 @@ const MONTH_NAMES = [
   'tháng 7', 'tháng 8', 'tháng 9', 'tháng 10', 'tháng 11', 'tháng 12',
 ];
 
-export default function StatusBar() {
+const TAB_TITLES: Record<NavId, { label: string; sub: string }> = {
+  dashboard: { label: 'Dashboard', sub: 'Thống kê & Cảnh báo' },
+  work:      { label: 'Việc',      sub: 'Công việc & Giảng dạy' },
+  finance:   { label: 'Tài chính', sub: 'Dòng tiền & Đầu tư' },
+  health:    { label: 'Sức khỏe', sub: 'Gym & Dinh dưỡng' },
+  study:     { label: 'Học tập',  sub: 'Ngoại ngữ & Đồ án' },
+};
+
+interface StatusBarProps {
+  activeTab?: NavId;
+}
+
+export default function StatusBar({ activeTab = 'dashboard' }: StatusBarProps) {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -21,6 +34,8 @@ export default function StatusBar() {
   const dateStr = `${now.getDate()} ${MONTH_NAMES[now.getMonth()]}`;
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
+
+  const tabInfo = TAB_TITLES[activeTab];
 
   return (
     <div className="status-bar">
@@ -39,10 +54,10 @@ export default function StatusBar() {
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <span className="badge badge-accent">5 task hôm nay</span>
+          <span className="badge badge-accent">{tabInfo.label}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <Clock size={11} color="var(--color-text-3)" />
-            <span className="text-xs text-3">3 chưa xong</span>
+            <span className="text-xs text-3">{tabInfo.sub}</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import { CheckCircle2, Circle, ListTodo } from 'lucide-react';
-import { todayTasks } from '@/lib/mock-data';
+import { todayTasks as initialTasks } from '@/lib/mock-data';
 
 const CATEGORY_COLORS: Record<string, string> = {
   work:      '#2563EB',
@@ -10,7 +13,15 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export default function TodayCard() {
-  const done = todayTasks.filter((t) => t.done).length;
+  const [tasks, setTasks] = useState(initialTasks);
+
+  const toggleTask = (id: string) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+    );
+  };
+
+  const done = tasks.filter((t) => t.done).length;
 
   return (
     <div className="card bento-full">
@@ -19,20 +30,25 @@ export default function TodayCard() {
           <ListTodo size={14} strokeWidth={2} />
           Hôm nay
         </span>
-        <span className="text-xs text-2">{done}/{todayTasks.length} xong</span>
+        <span className="text-xs text-2">{done}/{tasks.length} xong</span>
       </div>
 
       <div>
-        {todayTasks.map((task) => (
-          <div key={task.id} className="task-item">
+        {tasks.map((task) => (
+          <div
+            key={task.id}
+            className="task-item"
+            onClick={() => toggleTask(task.id)}
+            style={{ cursor: 'pointer', userSelect: 'none' }}
+          >
             {task.done
               ? <CheckCircle2 size={17} color="var(--color-success)" strokeWidth={2} style={{ flexShrink: 0 }} />
               : <Circle size={17} color="var(--color-border)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
             }
             <div
               style={{
-                width: 3,
-                height: 3,
+                width: 4,
+                height: 4,
                 borderRadius: '50%',
                 background: CATEGORY_COLORS[task.category] ?? '#6B6B6B',
                 flexShrink: 0,

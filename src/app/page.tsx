@@ -1,44 +1,30 @@
+'use client';
+
+import { useState } from 'react';
 import StatusBar from '@/components/layout/StatusBar';
-import BottomNav from '@/components/layout/BottomNav';
-import TodayCard from '@/components/cards/TodayCard';
-import FreelanceCard from '@/components/cards/FreelanceCard';
-import TeachCard from '@/components/cards/TeachCard';
-import LanguageCard from '@/components/cards/LanguageCard';
-import ProjectCard from '@/components/cards/ProjectCard';
-import CryptoCard from '@/components/cards/CryptoCard';
-import GymCard from '@/components/cards/GymCard';
+import BottomNav, { NavId } from '@/components/layout/BottomNav';
+import DashboardView from '@/components/views/DashboardView';
+import WorkView from '@/components/views/WorkView';
+import FinanceView from '@/components/views/FinanceView';
+import HealthView from '@/components/views/HealthView';
+import StudyView from '@/components/views/StudyView';
 
 export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState<NavId>('dashboard');
+
   return (
     <>
-      <StatusBar />
+      <StatusBar activeTab={activeTab} />
 
       <main className="page-scroll" id="main-content">
-        <div className="bento-grid">
-          {/* Row 1: Today tasks — full width */}
-          <TodayCard />
-
-          {/* Row 2: Freelance — full width */}
-          <FreelanceCard />
-
-          {/* Row 3: Teach — full width */}
-          <TeachCard />
-
-          {/* Row 4: Language — full width */}
-          <LanguageCard />
-
-          {/* Row 5: School projects — full width */}
-          <ProjectCard />
-
-          {/* Row 6: Crypto — full width */}
-          <CryptoCard />
-
-          {/* Row 7: Gym & Nutrition — full width */}
-          <GymCard />
-        </div>
+        {activeTab === 'dashboard' && <DashboardView onNavigate={setActiveTab} />}
+        {activeTab === 'work' && <WorkView />}
+        {activeTab === 'finance' && <FinanceView />}
+        {activeTab === 'health' && <HealthView />}
+        {activeTab === 'study' && <StudyView />}
       </main>
 
-      <BottomNav />
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </>
   );
 }
