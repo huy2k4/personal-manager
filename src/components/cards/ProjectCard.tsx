@@ -1,6 +1,7 @@
+import { GraduationCap } from 'lucide-react';
 import { schoolProjects } from '@/lib/mock-data';
-import ProgressBar from '@/components/ui/ProgressBar';
 import Badge from '@/components/ui/Badge';
+import ProgressBar from '@/components/ui/ProgressBar';
 
 const PRIORITY_VARIANT = { high: 'danger', medium: 'warn', low: 'neutral' } as const;
 const PRIORITY_LABEL = { high: 'Gấp', medium: 'Vừa', low: 'Thấp' } as const;
@@ -16,7 +17,10 @@ export default function ProjectCard() {
   return (
     <div className="card bento-full">
       <div className="card-header">
-        <span className="card-title">🏫 Project trường</span>
+        <span className="card-title">
+          <GraduationCap size={14} strokeWidth={2} />
+          Project trường
+        </span>
         <span className="text-xs text-3">{schoolProjects.length} môn</span>
       </div>
 

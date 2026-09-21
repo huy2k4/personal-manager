@@ -1,3 +1,4 @@
+import { CheckCircle2, Circle, ListTodo } from 'lucide-react';
 import { todayTasks } from '@/lib/mock-data';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -14,23 +15,20 @@ export default function TodayCard() {
   return (
     <div className="card bento-full">
       <div className="card-header">
-        <span className="card-title">📋 Hôm nay</span>
+        <span className="card-title">
+          <ListTodo size={14} strokeWidth={2} />
+          Hôm nay
+        </span>
         <span className="text-xs text-2">{done}/{todayTasks.length} xong</span>
       </div>
 
       <div>
         {todayTasks.map((task) => (
           <div key={task.id} className="task-item">
-            <div
-              className={`task-check${task.done ? ' done' : ''}`}
-              aria-label={task.done ? 'Đã xong' : 'Chưa xong'}
-            >
-              {task.done && (
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </div>
+            {task.done
+              ? <CheckCircle2 size={17} color="var(--color-success)" strokeWidth={2} style={{ flexShrink: 0 }} />
+              : <Circle size={17} color="var(--color-border)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+            }
             <div
               style={{
                 width: 3,

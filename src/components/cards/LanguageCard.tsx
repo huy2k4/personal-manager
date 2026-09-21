@@ -1,3 +1,4 @@
+import { Languages } from 'lucide-react';
 import { languages } from '@/lib/mock-data';
 import ProgressBar from '@/components/ui/ProgressBar';
 
@@ -10,7 +11,10 @@ export default function LanguageCard() {
   return (
     <div className="card bento-full">
       <div className="card-header">
-        <span className="card-title">📚 Ngoại ngữ</span>
+        <span className="card-title">
+          <Languages size={14} strokeWidth={2} />
+          Ngoại ngữ
+        </span>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -25,26 +29,18 @@ export default function LanguageCard() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: LANG_COLORS[lang.lang],
-                }}
-              >
+              <span style={{ fontSize: 13, fontWeight: 700, color: LANG_COLORS[lang.lang] }}>
                 {lang.lang}
               </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: '1px 6px',
-                  borderRadius: 99,
-                  background: lang.todayDone ? 'var(--color-success-bg)' : 'var(--color-warn-bg)',
-                  color: lang.todayDone ? 'var(--color-success)' : 'var(--color-warn)',
-                }}
-              >
-                {lang.todayDone ? '✓ Done' : '○ Pending'}
+              <span style={{
+                fontSize: 10,
+                fontWeight: 600,
+                padding: '1px 6px',
+                borderRadius: 99,
+                background: lang.todayDone ? 'var(--color-success-bg)' : 'var(--color-warn-bg)',
+                color: lang.todayDone ? 'var(--color-success)' : 'var(--color-warn)',
+              }}>
+                {lang.todayDone ? 'Done' : 'Pending'}
               </span>
             </div>
 
@@ -58,7 +54,7 @@ export default function LanguageCard() {
               {lang.xp}/{lang.xpGoal} XP · {lang.level}
             </div>
 
-            <div className="text-xs text-2" style={{ marginTop: 6, fontStyle: 'italic' }}>
+            <div className="text-xs text-2" style={{ marginTop: 6, fontStyle: 'italic', lineHeight: 1.4 }}>
               {lang.nextLesson}
             </div>
           </div>

@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Clock } from 'lucide-react';
 
 const DAY_NAMES = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-const MONTH_NAMES = ['tháng 1', 'tháng 2', 'tháng 3', 'tháng 4', 'tháng 5', 'tháng 6',
-  'tháng 7', 'tháng 8', 'tháng 9', 'tháng 10', 'tháng 11', 'tháng 12'];
+const MONTH_NAMES = [
+  'tháng 1', 'tháng 2', 'tháng 3', 'tháng 4', 'tháng 5', 'tháng 6',
+  'tháng 7', 'tháng 8', 'tháng 9', 'tháng 10', 'tháng 11', 'tháng 12',
+];
 
 export default function StatusBar() {
   const [now, setNow] = useState(new Date());
@@ -24,13 +27,23 @@ export default function StatusBar() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div className="text-xs text-2">{dayName}, {dateStr}</div>
-          <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.02em', color: 'var(--color-text-1)' }}>
+          <div style={{
+            fontSize: 26,
+            fontWeight: 700,
+            lineHeight: 1.15,
+            letterSpacing: '-0.03em',
+            color: 'var(--color-text-1)',
+            fontVariantNumeric: 'tabular-nums',
+          }}>
             {hours}:{minutes}
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <span className="badge badge-accent text-xs">5 task hôm nay</span>
-          <span className="text-xs text-3">3 chưa xong</span>
+          <span className="badge badge-accent">5 task hôm nay</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Clock size={11} color="var(--color-text-3)" />
+            <span className="text-xs text-3">3 chưa xong</span>
+          </div>
         </div>
       </div>
     </div>

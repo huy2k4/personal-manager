@@ -1,3 +1,4 @@
+import { MonitorPlay, ChevronRight } from 'lucide-react';
 import { lessons } from '@/lib/mock-data';
 
 function formatDate(dateStr: string) {
@@ -17,8 +18,11 @@ export default function TeachCard() {
   return (
     <div className="card bento-full">
       <div className="card-header">
-        <span className="card-title">🎓 Dạy Scratch</span>
-        <span className="text-xs text-accent font-medium">{lessons.length} buổi sắp tới</span>
+        <span className="card-title">
+          <MonitorPlay size={14} strokeWidth={2} />
+          Dạy Scratch
+        </span>
+        <span className="text-xs text-accent font-medium">{lessons.length} buổi tới</span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -46,16 +50,17 @@ export default function TeachCard() {
               <div className="text-sm font-medium text-1">{lesson.topic}</div>
               <div className="text-xs text-2">{lesson.student}</div>
             </div>
-            {idx === 0 && (
-              <span className="badge badge-accent">Tiếp theo</span>
-            )}
+            {idx === 0
+              ? <span className="badge badge-accent">Tiếp theo</span>
+              : <ChevronRight size={14} color="var(--color-text-3)" />
+            }
           </div>
         ))}
       </div>
 
       {nextLesson && (
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--color-border-2)' }}>
-          <span className="text-xs text-3">Cần chuẩn bị: Slide {nextLesson.topic}</span>
+          <span className="text-xs text-3">Cần chuẩn bị: Slide — {nextLesson.topic}</span>
         </div>
       )}
     </div>

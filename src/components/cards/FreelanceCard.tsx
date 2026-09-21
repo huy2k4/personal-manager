@@ -1,11 +1,12 @@
+import { Briefcase } from 'lucide-react';
 import { contracts } from '@/lib/mock-data';
 import Badge from '@/components/ui/Badge';
 import ProgressBar from '@/components/ui/ProgressBar';
 
 const STATUS_VARIANT = {
-  active:   'accent',
-  review:   'warn',
-  overdue:  'danger',
+  active:  'accent',
+  review:  'warn',
+  overdue: 'danger',
 } as const;
 
 const STATUS_LABEL = {
@@ -31,7 +32,10 @@ export default function FreelanceCard() {
   return (
     <div className="card bento-full">
       <div className="card-header">
-        <span className="card-title">💼 Freelance</span>
+        <span className="card-title">
+          <Briefcase size={14} strokeWidth={2} />
+          Freelance
+        </span>
         <span className="text-xs font-semibold text-1">{formatVND(totalEarned)} earned</span>
       </div>
 
