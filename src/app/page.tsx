@@ -1,39 +1,44 @@
-export default function Home() {
+import StatusBar from '@/components/layout/StatusBar';
+import BottomNav from '@/components/layout/BottomNav';
+import TodayCard from '@/components/cards/TodayCard';
+import FreelanceCard from '@/components/cards/FreelanceCard';
+import TeachCard from '@/components/cards/TeachCard';
+import LanguageCard from '@/components/cards/LanguageCard';
+import ProjectCard from '@/components/cards/ProjectCard';
+import CryptoCard from '@/components/cards/CryptoCard';
+import GymCard from '@/components/cards/GymCard';
+
+export default function DashboardPage() {
   return (
-    <main className="main-container">
-      <div className="glow-orb" aria-hidden="true" />
-      
-      <div className="card">
-        <div className="badge">
-          <span className="badge-dot" />
-          <span>Next.js Ready</span>
+    <>
+      <StatusBar />
+
+      <main className="page-scroll" id="main-content">
+        <div className="bento-grid">
+          {/* Row 1: Today tasks — full width */}
+          <TodayCard />
+
+          {/* Row 2: Freelance — full width */}
+          <FreelanceCard />
+
+          {/* Row 3: Teach — full width */}
+          <TeachCard />
+
+          {/* Row 4: Language — full width */}
+          <LanguageCard />
+
+          {/* Row 5: School projects — full width */}
+          <ProjectCard />
+
+          {/* Row 6: Crypto — full width */}
+          <CryptoCard />
+
+          {/* Row 7: Gym & Nutrition — full width */}
+          <GymCard />
         </div>
+      </main>
 
-        <h1 className="title">Hello World!</h1>
-
-        <p className="subtitle">
-          Dự án <strong>Personal Manager</strong> đã được khởi tạo thành công với Next.js và TypeScript. Sẵn sàng để phát triển các tính năng tiếp theo.
-        </p>
-
-        <div className="meta-grid">
-          <div className="meta-item">
-            <span className="meta-label">Framework</span>
-            <span className="meta-value">Next.js 16 (App Router)</span>
-          </div>
-          <div className="meta-item">
-            <span className="meta-label">Language</span>
-            <span className="meta-value">TypeScript 5</span>
-          </div>
-          <div className="meta-item">
-            <span className="meta-label">Repo</span>
-            <span className="meta-value">huy2k4/personal-manager</span>
-          </div>
-        </div>
-      </div>
-
-      <p className="footer-text">
-        Chạy <code>npm run dev</code> để bắt đầu môi trường phát triển local.
-      </p>
-    </main>
+      <BottomNav />
+    </>
   );
 }
