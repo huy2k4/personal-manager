@@ -8,14 +8,9 @@ import {
   CheckCircle2,
   Circle,
   Clock,
-  RotateCcw,
-  Plus,
   Trash2,
-  Edit3,
-  Check,
 } from 'lucide-react';
 import type { WorkProject, ProjectSchedule, ProjectGuide, ProjectGlossary } from '@/types';
-import Badge from '@/components/ui/Badge';
 import { supabase } from '@/lib/supabase/client';
 
 interface WorkProjectCardProps {
@@ -55,12 +50,20 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   // Mobile double-tap detection
   const lastTapRef = useRef<number>(0);
   const handleTouchEnd = (e: React.TouchEvent) => {
-    // Only trigger flip if not clicking an input or button
     const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON' || target.tagName === 'TEXTAREA') return;
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'BUTTON' ||
+      target.tagName === 'TEXTAREA' ||
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('textarea')
+    ) {
+      return;
+    }
 
     const now = Date.now();
-    if (now - lastTapRef.current < 320) {
+    if (now - lastTapRef.current < 350) {
       setIsFlipped((prev) => !prev);
       lastTapRef.current = 0;
     } else {
@@ -70,7 +73,16 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON' || target.tagName === 'TEXTAREA') return;
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'BUTTON' ||
+      target.tagName === 'TEXTAREA' ||
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('textarea')
+    ) {
+      return;
+    }
     setIsFlipped((prev) => !prev);
   };
 
@@ -242,13 +254,18 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
         <div
           className="card bento-full"
           style={{
+            position: isFlipped ? 'absolute' : 'relative',
+            top: 0,
+            left: 0,
+            right: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            minHeight: 220,
+            minHeight: 200,
             cursor: 'default',
+            pointerEvents: isFlipped ? 'none' : 'auto',
           }}
         >
-          {/* Header */}
+          {/* Header (Same on both sides) */}
           <div className="card-header" style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {project.logoUrl ? (
@@ -268,9 +285,6 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                   {project.name}
                 </span>
               )}
-              {project.tagline ? (
-                <Badge variant="neutral">{project.tagline}</Badge>
-              ) : null}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -429,11 +443,9 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                         {term.term}
                       </span>
                     </div>
-                    {(openTermId === term.id || true) && (
-                      <div style={{ fontSize: 11.5, color: 'var(--color-text-2)', marginTop: 3, lineHeight: 1.4 }}>
-                        {term.definition}
-                      </div>
-                    )}
+                    <div style={{ fontSize: 11.5, color: 'var(--color-text-2)', marginTop: 3, lineHeight: 1.4 }}>
+                      {term.definition}
+                    </div>
                   </div>
                 ))
               )}
@@ -447,40 +459,52 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
         <div
           className="card bento-full"
           style={{
-            position: 'absolute',
+            position: isFlipped ? 'relative' : 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            bottom: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
             display: 'flex',
             flexDirection: 'column',
-            overflowY: 'auto',
-            minHeight: 380,
+            minHeight: 340,
             background: 'var(--color-surface)',
             border: '2px solid var(--color-accent)',
             boxShadow: '0 8px 30px rgba(37, 99, 235, 0.15)',
             zIndex: 10,
+            pointerEvents: isFlipped ? 'auto' : 'none',
           }}
         >
-          {/* Back Header */}
+          {/* Back Header (Exact same Title / Logo as Front) */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: 10,
+              marginBottom: 12,
               paddingBottom: 8,
               borderBottom: '1px solid var(--color-border-2)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Edit3 size={15} color="var(--color-accent)" />
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text-1)' }}>
-                Chỉnh sửa: {project.name}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {project.logoUrl ? (
+                <img
+                  src={project.logoUrl}
+                  alt={project.name}
+                  style={{
+                    height: 20,
+                    width: 'auto',
+                    maxWidth: 110,
+                    objectFit: 'contain',
+                    display: 'block',
+                  }}
+                />
+              ) : (
+                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>
+                  {project.name}
+                </span>
+              )}
             </div>
 
             <button
@@ -489,46 +513,40 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                 setIsFlipped(false);
               }}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                padding: '4px 9px',
+                padding: '5px 14px',
                 borderRadius: 'var(--radius-sm)',
                 background: 'var(--color-accent)',
                 color: '#FFFFFF',
                 border: 'none',
-                fontSize: 11.5,
+                fontSize: 12,
                 fontWeight: 700,
                 cursor: 'pointer',
+                transition: 'all 150ms ease',
               }}
             >
-              <Check size={13} />
-              <span>Xong & Lật lại</span>
+              Save
             </button>
           </div>
 
-          {/* Edit Tabs */}
+          {/* Edit Tabs (Clean text with NO + signs) */}
           <div className="project-tabs" style={{ marginBottom: 12 }}>
             <button
               className={`project-tab-btn${editTab === 'schedule' ? ' active' : ''}`}
               onClick={(e) => { e.stopPropagation(); setEditTab('schedule'); }}
             >
-              <Plus size={12} />
-              <span>+ Lịch trình</span>
+              <span>Lịch trình</span>
             </button>
             <button
               className={`project-tab-btn${editTab === 'guides' ? ' active' : ''}`}
               onClick={(e) => { e.stopPropagation(); setEditTab('guides'); }}
             >
-              <Plus size={12} />
-              <span>+ Hướng dẫn</span>
+              <span>Hướng dẫn</span>
             </button>
             <button
               className={`project-tab-btn${editTab === 'glossary' ? ' active' : ''}`}
               onClick={(e) => { e.stopPropagation(); setEditTab('glossary'); }}
             >
-              <Plus size={12} />
-              <span>+ Thuật ngữ</span>
+              <span>Thuật ngữ</span>
             </button>
           </div>
 
@@ -613,49 +631,50 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     gap: 6,
                   }}
                 >
-                  <Plus size={14} />
                   <span>Thêm Lịch trình</span>
                 </button>
               </form>
 
               {/* List of current schedules with delete option */}
-              <div style={{ marginTop: 6 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
-                  Lịch hiện tại ({schedules.length})
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 130, overflowY: 'auto' }}>
-                  {schedules.map((s) => (
-                    <div
-                      key={s.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '5px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        background: 'var(--color-surface-2)',
-                        fontSize: 11.5,
-                      }}
-                    >
-                      <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {s.title} ({s.date})
-                      </span>
-                      <button
-                        onClick={(e) => handleDeleteSchedule(s.id, e)}
+              {schedules.length > 0 && (
+                <div style={{ marginTop: 4 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Lịch hiện tại ({schedules.length})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 130, overflowY: 'auto' }}>
+                    {schedules.map((s) => (
+                      <div
+                        key={s.id}
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--color-danger)',
-                          padding: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '5px 8px',
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'var(--color-surface-2)',
+                          fontSize: 11.5,
                         }}
                       >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  ))}
+                        <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {s.title} ({s.date})
+                        </span>
+                        <button
+                          onClick={(e) => handleDeleteSchedule(s.id, e)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--color-danger)',
+                            padding: 2,
+                          }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -709,49 +728,50 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     gap: 6,
                   }}
                 >
-                  <Plus size={14} />
                   <span>Thêm Hướng dẫn</span>
                 </button>
               </form>
 
               {/* List of current guides */}
-              <div style={{ marginTop: 4 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
-                  Hướng dẫn hiện có ({guides.length})
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 110, overflowY: 'auto' }}>
-                  {guides.map((g) => (
-                    <div
-                      key={g.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '5px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        background: 'var(--color-surface-2)',
-                        fontSize: 11.5,
-                      }}
-                    >
-                      <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {g.question}
-                      </span>
-                      <button
-                        onClick={(e) => handleDeleteGuide(g.id, e)}
+              {guides.length > 0 && (
+                <div style={{ marginTop: 4 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Hướng dẫn hiện có ({guides.length})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 110, overflowY: 'auto' }}>
+                    {guides.map((g) => (
+                      <div
+                        key={g.id}
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--color-danger)',
-                          padding: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '5px 8px',
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'var(--color-surface-2)',
+                          fontSize: 11.5,
                         }}
                       >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  ))}
+                        <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {g.question}
+                        </span>
+                        <button
+                          onClick={(e) => handleDeleteGuide(g.id, e)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--color-danger)',
+                            padding: 2,
+                          }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -804,49 +824,50 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     gap: 6,
                   }}
                 >
-                  <Plus size={14} />
                   <span>Thêm Thuật ngữ</span>
                 </button>
               </form>
 
               {/* List of current terms */}
-              <div style={{ marginTop: 4 }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
-                  Thuật ngữ hiện có ({glossary.length})
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 110, overflowY: 'auto' }}>
-                  {glossary.map((t) => (
-                    <div
-                      key={t.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '5px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        background: 'var(--color-surface-2)',
-                        fontSize: 11.5,
-                      }}
-                    >
-                      <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {t.term}
-                      </span>
-                      <button
-                        onClick={(e) => handleDeleteTerm(t.id, e)}
+              {glossary.length > 0 && (
+                <div style={{ marginTop: 4 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Thuật ngữ hiện có ({glossary.length})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 110, overflowY: 'auto' }}>
+                    {glossary.map((t) => (
+                      <div
+                        key={t.id}
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--color-danger)',
-                          padding: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '5px 8px',
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'var(--color-surface-2)',
+                          fontSize: 11.5,
                         }}
                       >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  ))}
+                        <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {t.term}
+                        </span>
+                        <button
+                          onClick={(e) => handleDeleteTerm(t.id, e)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--color-danger)',
+                            padding: 2,
+                          }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
