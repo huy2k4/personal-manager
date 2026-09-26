@@ -47,16 +47,28 @@
 }
 
 /* ─── Reset ─────────────────────────────────────────────────── */
+/* ─── Reset & Universal Scrollbar Removal ───────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar,
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 body {
@@ -68,6 +80,8 @@ body {
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 /* Mobile-first: width 100%, cap at 480px max, center on desktop */
@@ -78,6 +92,8 @@ body {
   min-height: 100dvh;
   position: relative;
   background-color: var(--color-bg);
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 /* ─── Scrollable content area ────────────────────────────────── */
@@ -86,12 +102,15 @@ body {
   overflow-x: hidden;
   padding: 0 var(--space-4) calc(var(--nav-height) + var(--safe-bottom) + var(--space-4));
   height: 100dvh;
-  scrollbar-width: none;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
   -webkit-overflow-scrolling: touch;
 }
 
 .page-scroll::-webkit-scrollbar {
-  display: none;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* ─── Bento Grid ─────────────────────────────────────────────── */
