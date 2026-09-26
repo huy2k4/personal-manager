@@ -27,6 +27,53 @@ const PROJ_COLORS: Record<string,string> = {
   'nam-khanh': '#16A34A',
 };
 
+let audioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  if (!audioCtx) {
+    const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (AudioCtxClass) {
+      audioCtx = new AudioCtxClass();
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+
+function playHapticTick() {
+  try {
+    // 1. Hardware vibration for Android
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(8);
+    }
+    // 2. Sub-bass acoustic haptic pulse for iOS
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(56, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.013);
+    
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.013);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + 0.014);
+  } catch {
+    // Fallback gracefully
+  }
+}
+
 export default function WorkProgressCard() {
   const today     = useRef(getVNToday()).current;
   const todayDDMM = toDDMM(today);
@@ -51,77 +98,114 @@ export default function WorkProgressCard() {
   });
   const maxDay = Math.max(...dayCounts, 1);
 
-  // ── Drag + momentum ─────────────────────────────────────────────────────
-  const startX   = useRef<number|null>(null);
-  const startY   = useRef(0);
-  const isH      = useRef<boolean|null>(null);
-  const baseOff  = useRef(0);
-  const lastX    = useRef(0);
-  const lastT    = useRef(0);
-  const tmr      = useRef<ReturnType<typeof setTimeout>|null>(null);
+  // ── Drag + high momentum (up to 13 days) ──────────────────────────────────
+  const startX       = useRef<number|null>(null);
+  const startY       = useRef(0);
+  const isH          = useRef<boolean|null>(null);
+  const baseOff      = useRef(0);
+  const touchHistory = useRef<{ x: number; t: number }[]>([]);
+  const tmr          = useRef<ReturnType<typeof setTimeout>|null>(null);
 
-  const buzz = () => { if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(7); };
   const killTimer = () => { if (tmr.current) { clearTimeout(tmr.current); tmr.current = null; } };
 
-  const momentRef = useRef<(t: number) => void>(undefined!);
-  momentRef.current = (target: number) => {
+  const startMomentum = useCallback((targetOffset: number) => {
     killTimer();
     const cur = offsetRef.current;
-    if (cur === target) return;
-    const next = cur + Math.sign(target - cur);
-    setOffset(next);
-    buzz();
-    const left = Math.abs(target - next);
-    if (left > 0) {
-      const elapsed = Math.abs(target - cur) - left;
-      tmr.current = setTimeout(() => momentRef.current(target), Math.min(50 + elapsed * 20, 200));
-    }
-  };
+    const totalSteps = Math.abs(targetOffset - cur);
+    if (totalSteps === 0) return;
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const step = (remaining: number) => {
+      const current = offsetRef.current;
+      if (current === targetOffset) return;
+      
+      const next = current + Math.sign(targetOffset - current);
+      setOffset(next);
+      playHapticTick();
+      
+      const left = Math.abs(targetOffset - next);
+      if (left > 0) {
+        // Natural ease-out deceleration curve: fast at start (~24ms), slow at end (~135ms)
+        const progress = (totalSteps - left) / totalSteps;
+        const delay = Math.round(22 + Math.pow(progress, 1.7) * 115);
+        tmr.current = setTimeout(() => step(left), delay);
+      }
+    };
+
+    step(totalSteps);
+  }, [setOffset]);
+
+  const handlePointerStart = (clientX: number, clientY: number, timeStamp: number) => {
     killTimer();
-    startX.current  = e.touches[0].clientX;
-    startY.current  = e.touches[0].clientY;
-    lastX.current   = e.touches[0].clientX;
-    lastT.current   = e.timeStamp;
+    getAudioContext();
+    startX.current  = clientX;
+    startY.current  = clientY;
     baseOff.current = offsetRef.current;
     isH.current     = null;
-  }, []);
+    touchHistory.current = [{ x: clientX, t: timeStamp }];
+  };
 
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
+  const handlePointerMove = (clientX: number, clientY: number, timeStamp: number) => {
     if (startX.current === null) return;
-    const dx = e.touches[0].clientX - startX.current;
-    const dy = e.touches[0].clientY - startY.current;
+    const dx = clientX - startX.current;
+    const dy = clientY - startY.current;
     if (isH.current === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
       isH.current = Math.abs(dx) > Math.abs(dy);
     }
     if (!isH.current) return;
+    
+    // Store points within the last 120ms
+    touchHistory.current.push({ x: clientX, t: timeStamp });
+    const cutoff = timeStamp - 120;
+    touchHistory.current = touchHistory.current.filter(p => p.t >= cutoff);
+
     const shift  = -Math.round(dx / DAY_PX);
     const newOff = baseOff.current + shift;
-    if (newOff !== offsetRef.current) { setOffset(newOff); buzz(); }
-    lastX.current = e.touches[0].clientX;
-    lastT.current = e.timeStamp;
-  }, [setOffset]);
+    if (newOff !== offsetRef.current) {
+      setOffset(newOff);
+      playHapticTick();
+    }
+  };
 
-  const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (startX.current === null || !isH.current) return;
-    const endX  = e.changedTouches[0].clientX;
-    const dt    = Math.max(e.timeStamp - lastT.current, 1);
-    const vel   = (lastX.current - endX) / dt;
-    const mom   = Math.sign(vel) * Math.min(Math.round(Math.abs(vel) * 300 / DAY_PX), 9);
+  const handlePointerEnd = (timeStamp: number) => {
+    if (startX.current === null || !isH.current) {
+      startX.current = null;
+      touchHistory.current = [];
+      return;
+    }
+    const history = touchHistory.current;
+    let vel = 0;
+    if (history.length >= 2) {
+      const first = history[0];
+      const last  = history[history.length - 1];
+      const dt    = Math.max(last.t - first.t, 10);
+      vel = (first.x - last.x) / dt; // px per ms (positive when swiped left -> next days)
+    }
     startX.current = null;
-    momentRef.current(offsetRef.current + mom);
-  }, []);
+    touchHistory.current = [];
+
+    // Map velocity to momentum steps: max 13 days
+    if (Math.abs(vel) > 0.12) {
+      const rawSteps = Math.round(Math.abs(vel) * 5.2);
+      const mom = Math.sign(vel) * Math.min(Math.max(rawSteps, 1), 13);
+      if (mom !== 0) {
+        startMomentum(offsetRef.current + mom);
+      }
+    }
+  };
 
   const first = days[0];
 
   return (
     <div
       className="card bento-full"
-      style={{ padding: '16px 14px 12px', userSelect:'none', touchAction:'pan-y' }}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
+      style={{ padding: '16px 14px 12px', userSelect:'none', touchAction:'pan-y', cursor: 'grab' }}
+      onTouchStart={(e) => handlePointerStart(e.touches[0].clientX, e.touches[0].clientY, e.timeStamp)}
+      onTouchMove={(e) => handlePointerMove(e.touches[0].clientX, e.touches[0].clientY, e.timeStamp)}
+      onTouchEnd={(e) => handlePointerEnd(e.timeStamp)}
+      onMouseDown={(e) => handlePointerStart(e.clientX, e.clientY, e.timeStamp)}
+      onMouseMove={(e) => { if (e.buttons === 1) handlePointerMove(e.clientX, e.clientY, e.timeStamp); }}
+      onMouseUp={(e) => handlePointerEnd(e.timeStamp)}
+      onMouseLeave={(e) => { if (startX.current !== null) handlePointerEnd(e.timeStamp); }}
     >
       {/* ── Header: month + date range ─────────────────────────── */}
       <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:10 }}>
