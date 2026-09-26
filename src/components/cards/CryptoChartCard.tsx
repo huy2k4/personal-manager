@@ -63,8 +63,10 @@ interface TickerData {
   lastTickTime: number;
 }
 
+import { useRefresh } from '@/lib/refresh-context';
+
 function formatVNNumber(n: number | undefined | null): string {
-  if (n === undefined || n === null || isNaN(n)) return '...';
+  if (n === undefined || n === null || isNaN(n)) return '---';
   const rounded = Math.round(n);
   return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
@@ -82,6 +84,7 @@ function formatCandleTime(timestamp: number | undefined): string {
 }
 
 export default function CryptoChartCard() {
+  const { isRefreshing, registerRefreshHandler } = useRefresh();
   const [selectedId, setSelectedId] = useState<'BTC' | 'ETH' | 'XAU'>('BTC');
   const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
   const [dataMap, setDataMap] = useState<Record<string, TickerData>>({});
@@ -161,7 +164,15 @@ export default function CryptoChartCard() {
     setLoading(false);
   };
 
-  // 2. Real-time Binance Futures WebSocket Stream (BTCUSDT, ETHUSDT, XAUUSDT)
+  // 2. Register baseline refresh handler with global pull-to-refresh
+  useEffect(() => {
+    return registerRefreshHandler('crypto-chart', async () => {
+      setDataMap({});
+      await fetchBaselineData();
+    });
+  }, [registerRefreshHandler]);
+
+  // 3. Real-time Binance Futures WebSocket Stream (BTCUSDT, ETHUSDT, XAUUSDT)
   useEffect(() => {
     fetchBaselineData();
 
@@ -261,7 +272,7 @@ export default function CryptoChartCard() {
     };
   }, [triggerPriceFlash]);
 
-  const activeData = dataMap[selectedId];
+  const activeData = isRefreshing ? undefined : dataMap[selectedId];
 
   // SVG Dimensions
   const chartWidth = 260;
@@ -376,7 +387,7 @@ export default function CryptoChartCard() {
         }}
       >
         {TICKERS.map((t) => {
-          const tData = dataMap[t.id];
+          const tData = isRefreshing ? undefined : dataMap[t.id];
           const isSelected = t.id === selectedId;
           const flash = flashMap[t.id];
           const flashColor = flash === 'up' ? '#10B981' : flash === 'down' ? '#EF4444' : undefined;
@@ -464,7 +475,7 @@ export default function CryptoChartCard() {
                   flexShrink: 0,
                 }}
               >
-                {tData ? formatVNNumber(tData.current) : '...'}
+                {tData ? formatVNNumber(tData.current) : '---'}
               </span>
             </button>
           );

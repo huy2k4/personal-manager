@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRefresh } from '@/lib/refresh-context';
 import { workProjects } from '@/lib/mock-data';
 
 const VN_ZONE   = 'Asia/Ho_Chi_Minh';
@@ -75,6 +76,7 @@ function playHapticTick() {
 }
 
 export default function WorkProgressCard() {
+  const { isRefreshing } = useRefresh();
   const today     = useRef(getVNToday()).current;
   const todayDDMM = toDDMM(today);
 
@@ -346,7 +348,7 @@ export default function WorkProgressCard() {
             const isToday = dm === todayDDMM;
             const isPast  = day < today && !isToday;
             const cnt     = dayCounts[i];
-            const barH    = cnt === 0 ? 3 : Math.max(7, (cnt / maxDay) * COL_H);
+            const barH    = isRefreshing ? 3 : (cnt === 0 ? 3 : Math.max(7, (cnt / maxDay) * COL_H));
             const bg      = isToday
               ? 'var(--color-accent)'
               : isPast ? 'rgba(37,99,235,0.22)' : 'rgba(37,99,235,0.10)';
@@ -390,8 +392,8 @@ export default function WorkProgressCard() {
       {/* ── Per-project horizontal bars ────────────────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {projStats.map(p => {
-          const pct   = (p.count / maxProj) * 100;
-          const empty = p.count === 0;
+          const pct   = isRefreshing ? 0 : ((p.count / maxProj) * 100);
+          const empty = p.count === 0 || isRefreshing;
           return (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <div style={{ minWidth: 86, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0, height: 22 }}>
@@ -406,6 +408,7 @@ export default function WorkProgressCard() {
                       objectFit: 'contain',
                       opacity: empty ? 0.35 : 1,
                       display: 'block',
+                      transition: 'opacity 0.25s ease',
                     }}
                   />
                 ) : (
@@ -416,6 +419,7 @@ export default function WorkProgressCard() {
                     color: empty ? 'var(--color-text-3)' : 'var(--color-text-2)',
                     letterSpacing: '0.01em',
                     lineHeight: 1,
+                    transition: 'color 0.25s ease',
                   }}>
                     {p.name}
                   </span>
@@ -442,7 +446,7 @@ export default function WorkProgressCard() {
                 textAlign: 'right',
                 flexShrink: 0,
               }}>
-                {p.count}
+                {isRefreshing ? '---' : p.count}
               </span>
             </div>
           );

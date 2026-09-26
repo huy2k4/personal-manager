@@ -11,6 +11,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import type { NavId } from '@/components/layout/BottomNav';
+import { useRefresh } from '@/lib/refresh-context';
 import {
   contracts,
   languages,
@@ -27,6 +28,7 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({ onNavigate }: DashboardViewProps) {
+  const { isRefreshing } = useRefresh();
   const totalFreelanceEarned = contracts.reduce((s, c) => s + c.earned, 0);
   const totalFreelanceGoal = contracts.reduce((s, c) => s + c.total, 0);
 
@@ -55,7 +57,7 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
             <Briefcase size={14} color="var(--color-accent)" />
           </div>
           <div>
-            <div className="kpi-val">{workProjects.length} Active</div>
+            <div className="kpi-val">{isRefreshing ? '---' : `${workProjects.length} Active`}</div>
             <div className="kpi-sub" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <img
                 src="/maersk-logo.png"
@@ -76,7 +78,7 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
             </span>
           </div>
           <div>
-            <div className="kpi-val">${totalCryptoValue.toLocaleString()}</div>
+            <div className="kpi-val">{isRefreshing ? '---' : `$${totalCryptoValue.toLocaleString()}`}</div>
             <div className="kpi-sub">3 đồng coin nắm giữ</div>
           </div>
         </div>
@@ -88,7 +90,7 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
             <Dumbbell size={14} color={todayGymDone ? 'var(--color-success)' : 'var(--color-warn)'} />
           </div>
           <div>
-            <div className="kpi-val">{nutritionToday.calories} kcal</div>
+            <div className="kpi-val">{isRefreshing ? '---' : `${nutritionToday.calories} kcal`}</div>
             <div className="kpi-sub">{nutritionToday.protein}g / {nutritionToday.proteinGoal}g protein</div>
           </div>
         </div>
@@ -101,7 +103,9 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
           </div>
           <div>
             <div className="kpi-val">
-              JA {jaLang?.streak}d <span style={{ fontSize: 14, color: 'var(--color-text-3)' }}>• EN {enLang?.streak}d</span>
+              {isRefreshing ? '---' : (
+                <>JA {jaLang?.streak}d <span style={{ fontSize: 14, color: 'var(--color-text-3)' }}>• EN {enLang?.streak}d</span></>
+              )}
             </div>
             <div className="kpi-sub">Chuỗi học liên tục</div>
           </div>

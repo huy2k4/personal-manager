@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { RefreshProvider } from '@/lib/refresh-context';
 import StatusBar from '@/components/layout/StatusBar';
 import BottomNav, { NavId } from '@/components/layout/BottomNav';
 import PullToRefresh from '@/components/ui/PullToRefresh';
@@ -14,7 +15,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<NavId>('dashboard');
 
   return (
-    <>
+    <RefreshProvider>
       <StatusBar activeTab={activeTab} />
 
       <PullToRefresh id="main-content">
@@ -26,6 +27,6 @@ export default function DashboardPage() {
       </PullToRefresh>
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
-    </>
+    </RefreshProvider>
   );
 }
