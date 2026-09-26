@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import type { NavId } from '@/components/layout/BottomNav';
 import {
-  todayTasks,
   contracts,
   languages,
   cryptoAssets,
@@ -20,18 +19,13 @@ import {
   nutritionToday,
   workProjects,
 } from '@/lib/mock-data';
-import ProgressBar from '@/components/ui/ProgressBar';
+import WorkProgressCard from '@/components/cards/WorkProgressCard';
 
 interface DashboardViewProps {
   onNavigate: (tab: NavId) => void;
 }
 
 export default function DashboardView({ onNavigate }: DashboardViewProps) {
-  // Stats calculations
-  const totalTasks = todayTasks.length;
-  const doneTasks = todayTasks.filter((t) => t.done).length;
-  const taskPercent = Math.round((doneTasks / totalTasks) * 100);
-
   const totalFreelanceEarned = contracts.reduce((s, c) => s + c.earned, 0);
   const totalFreelanceGoal = contracts.reduce((s, c) => s + c.total, 0);
 
@@ -45,30 +39,8 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-      {/* ─── 1. Thống kê tiến độ nhanh trong ngày ─── */}
-      <div className="card bento-full" style={{ padding: 'var(--space-4)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div>
-            <span className="text-xs font-semibold text-2" style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Tiến độ công việc hôm nay
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
-              <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>
-                {doneTasks}/{totalTasks}
-              </span>
-              <span className="text-xs text-3">mục xong ({taskPercent}%)</span>
-            </div>
-          </div>
-          <button
-            className="card-action"
-            onClick={() => onNavigate('work')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}
-          >
-            Tab Việc <ChevronRight size={14} />
-          </button>
-        </div>
-        <ProgressBar value={taskPercent} />
-      </div>
+      {/* ─── 1. Work Progress Card ─── */}
+      <WorkProgressCard />
 
       {/* ─── 2. Khối KPI Thống kê 2x2 ─── */}
       <div className="bento-grid" style={{ padding: 0 }}>
@@ -80,7 +52,14 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
           </div>
           <div>
             <div className="kpi-val">{workProjects.length} Active</div>
-            <div className="kpi-sub">Maersk • Betonamu • Nam Khánh</div>
+            <div className="kpi-sub" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <img
+                src="/maersk-logo.png"
+                alt="Maersk"
+                style={{ height: 11, width: 'auto', objectFit: 'contain' }}
+              />
+              <span>• Betonamu • Nam Khánh</span>
+            </div>
           </div>
         </div>
 

@@ -105,6 +105,7 @@ export const workProjects: WorkProject[] = [
   {
     id: 'maersk',
     name: 'Maersk',
+    logoUrl: '/maersk-logo.png',
     tagline: '',
     type: 'primary',
     schedules: [
@@ -112,6 +113,10 @@ export const workProjects: WorkProject[] = [
       { id: 'm2', title: 'Review PR #42 — Backend Tracking API', time: '10:30', date: '21/09', done: false },
       { id: 'm3', title: 'Sprint Planning & Backlog Refinement', time: '14:00', date: '23/09', done: false },
       { id: 'm4', title: 'Deploy Release v2.4 lên Staging', time: '17:00', date: '25/09', done: false },
+      { id: 'm5', title: 'Daily standup Maersk', time: '09:00', date: '26/09', done: false },
+      { id: 'm6', title: 'Code review module Container Tracking', time: '11:00', date: '27/09', done: false },
+      { id: 'm7', title: 'Fix bug EDI message parsing', time: '14:00', date: '29/09', done: false },
+      { id: 'm8', title: 'Sprint demo & retrospective', time: '15:00', date: '01/10', done: false },
     ],
     guides: [
       {
@@ -146,6 +151,9 @@ export const workProjects: WorkProject[] = [
       { id: 'b1', title: 'Họp review UI mockup với PM bên Nhật', time: '10:00', date: '22/09', done: false, note: 'Chuẩn bị prototype Figma' },
       { id: 'b2', title: 'Hoàn thành layout module bài học đa ngôn ngữ', time: '18:00', date: '24/09', done: false },
       { id: 'b3', title: 'Bàn giao bản Test nội bộ (Alpha release)', time: '12:00', date: '28/09', done: false },
+      { id: 'b4', title: 'Fix lỗi font Kanji trên Safari', time: '10:00', date: '26/09', done: false },
+      { id: 'b5', title: 'Họp check-in tiến độ với client Nhật', time: '14:00', date: '30/09', done: false },
+      { id: 'b6', title: 'Viết tài liệu API i18n', time: '10:00', date: '02/10', done: false },
     ],
     guides: [
       {
@@ -181,6 +189,9 @@ export const workProjects: WorkProject[] = [
       { id: 'nk1', title: 'Liên lạc với anh ABC để chốt hợp đồng', time: '20:00', date: '22/09', done: false, note: 'Chốt phạm vi tính năng & mốc thanh toán đợt 1' },
       { id: 'nk2', title: 'Gửi demo Dashboard khách hàng & tracking đơn', time: '16:00', date: '25/09', done: false },
       { id: 'nk3', title: 'Chốt bảng quy cách đóng gói và xuất khẩu', time: '11:00', date: '28/09', done: false },
+      { id: 'nk4', title: 'Revise thiết kế trang chủ theo feedback', time: '09:00', date: '27/09', done: false },
+      { id: 'nk5', title: 'Gửi báo giá cập nhật cho khách hàng', time: '16:00', date: '30/09', done: false },
+      { id: 'nk6', title: 'Họp nội bộ thống nhất bàn giao', time: '10:00', date: '01/10', done: false },
     ],
     guides: [
       {

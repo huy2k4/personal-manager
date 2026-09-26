@@ -100,6 +100,7 @@ export interface WorkProject {
   tagline: string;
   type: 'primary' | 'project';
   accentColor?: string;
+  logoUrl?: string;
   schedules: ProjectSchedule[];
   guides?: ProjectGuide[];
   glossary?: ProjectGlossary[];
