@@ -58,20 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(data as UserProfile);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           } else {
-            // Fallback to local session
             setUser(parsed);
-          }
-        } else {
-          // Default initial session for huyproplus2004 if local storage is empty
-          const { data } = await supabase
-            .from('profiles')
-            .select('id, username, full_name, role, has_finance')
-            .eq('username', 'huyproplus2004')
-            .single();
-
-          if (data) {
-            setUser(data as UserProfile);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           }
         }
       } catch {
