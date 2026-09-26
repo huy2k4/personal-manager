@@ -39,6 +39,7 @@ const TAB_TITLES: Record<NavId, { label: string; sub: string }> = {
   finance:   { label: 'Tài chính', sub: 'Dòng tiền & Đầu tư' },
   health:    { label: 'Sức khỏe', sub: 'Gym & Dinh dưỡng' },
   study:     { label: 'Học tập',  sub: 'Ngoại ngữ & Đồ án' },
+  account:   { label: 'Tài khoản', sub: 'Hồ sơ & Quản trị' },
 };
 
 // ─── Market sessions ─────────────────────────────────────────────────────────
