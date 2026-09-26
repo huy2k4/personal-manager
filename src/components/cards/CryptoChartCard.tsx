@@ -69,6 +69,18 @@ function formatVNNumber(n: number | undefined | null): string {
   return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
+function formatCandleTime(timestamp: number | undefined): string {
+  if (!timestamp) return '';
+  const d = new Date(timestamp);
+  const hours24 = d.getHours();
+  const ampm = hours24 >= 12 ? 'PM' : 'AM';
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  const hh = String(hours12).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${hh} ${ampm} ${dd}:${mm}`;
+}
+
 export default function CryptoChartCard() {
   const [selectedId, setSelectedId] = useState<'BTC' | 'ETH' | 'XAU'>('BTC');
   const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
@@ -480,7 +492,7 @@ export default function CryptoChartCard() {
           }}
         >
           {/* Main Price Row */}
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 2 }}>
+          <div style={{ marginBottom: 2 }}>
             <span
               style={{
                 fontSize: 17,
@@ -496,47 +508,55 @@ export default function CryptoChartCard() {
                 letterSpacing: '-0.02em',
                 transition: 'color 0.25s ease',
                 whiteSpace: 'nowrap',
+                display: 'block',
               }}
             >
               {formatVNNumber(displayPrice)}
             </span>
-            {hoveredCandle ? (
-              <span style={{ fontSize: 8.5, fontWeight: 600, color: 'var(--color-accent)', flexShrink: 0 }}>
-                {new Date(hoveredCandle.time).toLocaleDateString('vi-VN', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  hour: '2-digit',
-                })}
-              </span>
-            ) : null}
           </div>
 
-          {/* 1D and 7D or OHLC Tooltip Container — EXACT FIXED HEIGHT (34px) */}
-          <div style={{ height: 34, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {/* 1D and 7D or OHLC + Time Container — EXACT FIXED HEIGHT (36px) */}
+          <div style={{ height: 36, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {hoveredCandle ? (
-              <div
-                style={{
-                  fontSize: 8.5,
-                  color: 'var(--color-text-3)',
-                  fontVariantNumeric: 'tabular-nums',
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  rowGap: 1,
-                  columnGap: 2,
-                }}
-              >
-                <span>O:{formatVNNumber(hoveredCandle.open)}</span>
-                <span>H:{formatVNNumber(hoveredCandle.high)}</span>
-                <span>L:{formatVNNumber(hoveredCandle.low)}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <span
                   style={{
-                    color: hoveredCandle.close >= hoveredCandle.open ? '#10B981' : '#EF4444',
+                    fontSize: 8.5,
                     fontWeight: 700,
+                    color: 'var(--color-accent)',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    letterSpacing: '0.01em',
+                    lineHeight: 1.1,
                   }}
                 >
-                  C:{formatVNNumber(hoveredCandle.close)}
+                  {formatCandleTime(hoveredCandle.time)}
                 </span>
+                <div
+                  style={{
+                    fontSize: 8,
+                    color: 'var(--color-text-3)',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    rowGap: 1,
+                    columnGap: 2,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  <span>O:{formatVNNumber(hoveredCandle.open)}</span>
+                  <span>H:{formatVNNumber(hoveredCandle.high)}</span>
+                  <span>L:{formatVNNumber(hoveredCandle.low)}</span>
+                  <span
+                    style={{
+                      color: hoveredCandle.close >= hoveredCandle.open ? '#10B981' : '#EF4444',
+                      fontWeight: 700,
+                    }}
+                  >
+                    C:{formatVNNumber(hoveredCandle.close)}
+                  </span>
+                </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
