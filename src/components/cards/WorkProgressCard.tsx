@@ -108,13 +108,14 @@ export default function WorkProgressCard() {
     color: PROJ_COLORS[p.id] ?? '#6B6B6B',
     count: (p.schedules || []).filter(s => windowSet.has(s.date)).length,
   }));
-  const maxProj = Math.max(...projStats.map(s => s.count), 1);
+  // Mốc tối thiểu là 5 task: từ 1-4 task cây sẽ hiển thị theo tỷ lệ (20%, 40%, 60%, 80%), đạt 5 hoặc trên 5 mới full cây
+  const maxProj = Math.max(...projStats.map(s => s.count), 5);
 
   const dayCounts = days.map(day => {
     const dm = toDDMM(day);
     return projects.reduce((s, p) => s + (p.schedules || []).filter(x => x.date === dm).length, 0);
   });
-  const maxDay = Math.max(...dayCounts, 1);
+  const maxDay = Math.max(...dayCounts, 3);
 
   // ── Drag + high momentum (up to 13 days) ──────────────────────────────────
   const cardRef      = useRef<HTMLDivElement>(null);

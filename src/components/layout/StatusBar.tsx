@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
+import { JP, GB, US } from 'country-flag-icons/react/3x2';
 import type { NavId } from '@/components/layout/BottomNav';
 
 const VN_ZONE = 'Asia/Ho_Chi_Minh';
@@ -45,9 +46,9 @@ const TAB_TITLES: Record<NavId, { label: string; sub: string }> = {
 // ─── Market sessions ─────────────────────────────────────────────────────────
 // All open/close times are the exchange's local time; Intl API handles DST automatically.
 const SESSIONS = [
-  { label: 'TYO', zone: 'Asia/Tokyo',       openH: 9,  openM: 0,  closeH: 15, closeM: 30 },
-  { label: 'LDN', zone: 'Europe/London',    openH: 8,  openM: 0,  closeH: 16, closeM: 30 },
-  { label: 'NYC', zone: 'America/New_York', openH: 9,  openM: 30, closeH: 16, closeM: 0  },
+  { label: 'TYO', Flag: JP, title: 'Tokyo',    zone: 'Asia/Tokyo',       openH: 9,  openM: 0,  closeH: 15, closeM: 30 },
+  { label: 'LDN', Flag: GB, title: 'London',   zone: 'Europe/London',    openH: 8,  openM: 0,  closeH: 16, closeM: 30 },
+  { label: 'NYC', Flag: US, title: 'New York', zone: 'America/New_York', openH: 9,  openM: 30, closeH: 16, closeM: 0  },
 ];
 
 /** Parse date parts in a given IANA timezone. */
@@ -160,6 +161,7 @@ export default function StatusBar({ activeTab = 'dashboard' }: StatusBarProps) {
             lineHeight: 1.15,
             letterSpacing: '-0.03em',
             color: 'var(--color-text-1)',
+            fontFamily: 'var(--font-mono)',
             fontVariantNumeric: 'tabular-nums',
           }}>
             {hours}:{minutes}
@@ -182,7 +184,7 @@ export default function StatusBar({ activeTab = 'dashboard' }: StatusBarProps) {
         paddingTop: 6,
         borderTop: '1px solid var(--color-border-2)',
       }}>
-        {SESSIONS.map(({ label, zone, openH, openM, closeH, closeM }) => {
+        {SESSIONS.map(({ label, Flag, title, zone, openH, openM, closeH, closeM }) => {
           const { open, minsUntilOpen } = nextSessionOpen(now, zone, openH, openM, closeH, closeM);
           return (
             <div
@@ -191,38 +193,45 @@ export default function StatusBar({ activeTab = 'dashboard' }: StatusBarProps) {
                 flex: 1,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 4,
-                padding: '4px 8px',
+                justifyContent: 'center',
+                gap: 5,
+                padding: '5px 4px',
                 borderRadius: 'var(--radius-sm)',
                 background: open ? 'var(--color-accent-bg)' : 'var(--color-surface-2)',
-                border: `1px solid ${open ? 'rgba(37,99,235,0.18)' : 'var(--color-border-2)'}`,
+                border: `1px solid ${open ? 'var(--color-accent-ring)' : 'var(--color-border-2)'}`,
               }}
             >
-              {/* dot + label */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: '50%',
+              {/* 1. Cờ (Flag SVG) */}
+              <Flag
+                title={title}
+                style={{
+                  width: 15,
+                  height: 10.5,
+                  borderRadius: 2,
+                  boxShadow: '0 0 1px rgba(0,0,0,0.3)',
                   flexShrink: 0,
-                  background: open ? 'var(--color-accent)' : 'var(--color-text-4, #9ca3af)',
-                }} />
-                <span style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  color: open ? 'var(--color-accent)' : 'var(--color-text-3)',
-                }}>
-                  {label}
-                </span>
-              </div>
-              {/* countdown */}
+                }}
+              />
+
+              {/* 2. Tên phiên (Session label) */}
+              <span style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                color: open ? 'var(--color-accent)' : 'var(--color-text-3)',
+                flexShrink: 0,
+              }}>
+                {label}
+              </span>
+
+              {/* 3. Thời gian / Trạng thái (Countdown / Status) */}
               <span style={{
                 fontSize: 11,
                 fontWeight: 600,
+                fontFamily: 'var(--font-mono)',
                 fontVariantNumeric: 'tabular-nums',
                 color: open ? 'var(--color-accent)' : 'var(--color-text-1)',
+                flexShrink: 0,
               }}>
                 {open ? 'MỞ' : formatCountdown(minsUntilOpen)}
               </span>

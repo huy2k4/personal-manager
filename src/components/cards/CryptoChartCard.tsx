@@ -410,12 +410,12 @@ export default function CryptoChartCard() {
           const borderColor = tData
             ? isH1Up
               ? isSelected
-                ? 'rgba(16, 185, 129, 0.40)'
-                : 'rgba(16, 185, 129, 0.15)'
+                ? 'rgba(22, 163, 74, 0.40)'
+                : 'rgba(22, 163, 74, 0.15)'
               : isSelected
-              ? 'rgba(239, 68, 68, 0.40)'
-              : 'rgba(239, 68, 68, 0.15)'
-            : 'var(--color-border-2, rgba(255,255,255,0.08))';
+              ? 'rgba(220, 38, 38, 0.40)'
+              : 'rgba(220, 38, 38, 0.15)'
+            : 'var(--color-border-2)';
 
           return (
             <button
@@ -433,7 +433,7 @@ export default function CryptoChartCard() {
                 background: bgTint,
                 border: `1px solid ${borderColor}`,
                 cursor: 'pointer',
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'background-color 0.2s ease, border-color 0.2s ease',
                 minWidth: 0,
                 overflow: 'hidden',
               }}
@@ -466,10 +466,10 @@ export default function CryptoChartCard() {
                   fontSize: 10,
                   fontWeight: 600,
                   fontVariantNumeric: 'tabular-nums',
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                  fontFamily: 'var(--font-mono)',
                   color:
                     flashColor ||
-                    (isH1Up ? (isSelected ? '#10B981' : 'var(--color-text-1)') : (isSelected ? '#EF4444' : 'var(--color-text-1)')),
+                    (isH1Up ? (isSelected ? 'var(--color-success)' : 'var(--color-text-1)') : (isSelected ? 'var(--color-danger)' : 'var(--color-text-1)')),
                   transition: 'color 0.25s ease',
                   textAlign: 'right',
                   flexShrink: 0,
@@ -510,12 +510,12 @@ export default function CryptoChartCard() {
                 fontWeight: 800,
                 color:
                   flashMap[selectedId] === 'up'
-                    ? '#10B981'
+                    ? 'var(--color-success)'
                     : flashMap[selectedId] === 'down'
-                    ? '#EF4444'
+                    ? 'var(--color-danger)'
                     : 'var(--color-text-1)',
                 fontVariantNumeric: 'tabular-nums',
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                fontFamily: 'var(--font-mono)',
                 letterSpacing: '-0.02em',
                 transition: 'color 0.25s ease',
                 whiteSpace: 'nowrap',
@@ -536,7 +536,7 @@ export default function CryptoChartCard() {
                     fontWeight: 700,
                     color: 'var(--color-accent)',
                     fontVariantNumeric: 'tabular-nums',
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    fontFamily: 'var(--font-mono)',
                     letterSpacing: '0.01em',
                     lineHeight: 1.1,
                   }}
@@ -548,7 +548,7 @@ export default function CryptoChartCard() {
                     fontSize: 8,
                     color: 'var(--color-text-3)',
                     fontVariantNumeric: 'tabular-nums',
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    fontFamily: 'var(--font-mono)',
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
                     rowGap: 1,
@@ -561,7 +561,7 @@ export default function CryptoChartCard() {
                   <span>L:{formatVNNumber(hoveredCandle.low)}</span>
                   <span
                     style={{
-                      color: hoveredCandle.close >= hoveredCandle.open ? '#10B981' : '#EF4444',
+                      color: hoveredCandle.close >= hoveredCandle.open ? 'var(--color-success)' : 'var(--color-danger)',
                       fontWeight: 700,
                     }}
                   >
@@ -578,7 +578,7 @@ export default function CryptoChartCard() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     fontVariantNumeric: 'tabular-nums',
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    fontFamily: 'var(--font-mono)',
                   }}
                 >
                   <span style={{ color: 'var(--color-text-3)', fontSize: 8.5, fontWeight: 600, width: 15 }}>1D</span>
@@ -596,7 +596,7 @@ export default function CryptoChartCard() {
                     style={{
                       fontWeight: 700,
                       fontSize: 8.5,
-                      color: (activeData?.change1d ?? 0) >= 0 ? '#10B981' : '#EF4444',
+                      color: (activeData?.change1d ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
                       textAlign: 'right',
                       minWidth: 38,
                     }}
@@ -613,7 +613,7 @@ export default function CryptoChartCard() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     fontVariantNumeric: 'tabular-nums',
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    fontFamily: 'var(--font-mono)',
                   }}
                 >
                   <span style={{ color: 'var(--color-text-3)', fontSize: 8.5, fontWeight: 600, width: 15 }}>7D</span>
@@ -631,7 +631,7 @@ export default function CryptoChartCard() {
                     style={{
                       fontWeight: 700,
                       fontSize: 8.5,
-                      color: (activeData?.change7d ?? 0) >= 0 ? '#10B981' : '#EF4444',
+                      color: (activeData?.change7d ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
                       textAlign: 'right',
                       minWidth: 38,
                     }}
@@ -792,7 +792,7 @@ export default function CryptoChartCard() {
                         cy={chartPathData.lineCoordinates[hoverIndex].y}
                         r="3.5"
                         fill={strokeColor}
-                        stroke="#ffffff"
+                        stroke="var(--color-surface)"
                         strokeWidth="1.5"
                       />
                     </g>

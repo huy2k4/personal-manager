@@ -292,7 +292,7 @@ export default function PullToRefresh({
           opacity: showIndicator ? Math.min(1, 0.2 + progressRatio * 0.8) : 0,
           zIndex: 40,
           pointerEvents: 'none',
-          transition: !isPullingDown || isRefreshing ? 'all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none',
+          transition: !isPullingDown || isRefreshing ? 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
         }}
       >
         <div
@@ -300,11 +300,11 @@ export default function PullToRefresh({
             width: 34,
             height: 34,
             borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.96)',
+            background: 'var(--color-surface)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(37, 99, 235, 0.18)',
-            boxShadow: '0 3px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(37, 99, 235, 0.12)',
+            border: '1px solid var(--color-accent-ring)',
+            boxShadow: 'var(--shadow-card)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -328,7 +328,7 @@ export default function PullToRefresh({
               cy="12"
               r={radius}
               fill="none"
-              stroke="rgba(37, 99, 235, 0.15)"
+              stroke="var(--color-accent-glow)"
               strokeWidth="2.5"
             />
             {/* Dynamic Active Progress / Spinning Ring */}
@@ -337,7 +337,7 @@ export default function PullToRefresh({
               cy="12"
               r={radius}
               fill="none"
-              stroke="var(--color-accent, #2563EB)"
+              stroke="var(--color-accent)"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeDasharray={isRefreshing ? `${circumference * 0.75} ${circumference * 0.25}` : circumference}
@@ -357,7 +357,7 @@ export default function PullToRefresh({
                 : pullDistance * 0.4
               : 0
           }px)`,
-          transition: !isPullingDown || isRefreshing ? 'transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none',
+          transition: !isPullingDown || isRefreshing ? 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
         }}
       >
         {children}

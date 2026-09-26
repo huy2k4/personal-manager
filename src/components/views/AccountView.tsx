@@ -9,9 +9,7 @@ import {
   LogOut,
   Check,
   AlertCircle,
-  Users,
   Settings,
-  Briefcase,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase/client';
@@ -104,12 +102,12 @@ export default function AccountView() {
                 width: 44,
                 height: 44,
                 borderRadius: '50%',
-                background: user?.role === 'admin' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'linear-gradient(135deg, #4B5563, #1F2937)',
+                background: user?.role === 'admin' ? 'var(--color-accent)' : 'var(--color-text-2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#FFFFFF',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                color: 'var(--color-accent-ink)',
+                boxShadow: user?.role === 'admin' ? 'var(--shadow-accent)' : 'none',
               }}
             >
               <User size={22} />
@@ -138,11 +136,12 @@ export default function AccountView() {
               padding: '6px 10px',
               borderRadius: 'var(--radius-sm)',
               background: 'var(--color-danger-bg)',
-              border: '1px solid rgba(220, 38, 38, 0.15)',
+              border: '1px solid var(--color-danger)',
               color: 'var(--color-danger)',
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
+              transition: 'background-color 0.15s ease, opacity 0.15s ease',
             }}
           >
             <LogOut size={14} />
@@ -207,7 +206,7 @@ export default function AccountView() {
               border: 'none',
               cursor: 'pointer',
               position: 'relative',
-              transition: 'background 0.2s ease',
+              transition: 'background-color 0.2s ease',
               padding: 2,
             }}
           >
@@ -216,10 +215,10 @@ export default function AccountView() {
                 width: 20,
                 height: 20,
                 borderRadius: '50%',
-                background: '#FFFFFF',
+                background: 'var(--color-surface)',
                 transform: hasFinance ? 'translateX(20px)' : 'translateX(0px)',
-                transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+                transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: 'var(--shadow-card)',
               }}
             />
           </button>
@@ -276,7 +275,7 @@ export default function AccountView() {
                     background: 'var(--color-surface-2)',
                     fontSize: 12,
                     color: 'var(--color-text-1)',
-                    outline: 'none',
+                    transition: 'border-color 0.15s ease',
                   }}
                 />
               </div>
@@ -297,7 +296,7 @@ export default function AccountView() {
                     background: 'var(--color-surface-2)',
                     fontSize: 12,
                     color: 'var(--color-text-1)',
-                    outline: 'none',
+                    transition: 'border-color 0.15s ease',
                   }}
                 />
               </div>
@@ -320,7 +319,7 @@ export default function AccountView() {
                   background: 'var(--color-surface-2)',
                   fontSize: 12,
                   color: 'var(--color-text-1)',
-                  outline: 'none',
+                  transition: 'border-color 0.15s ease',
                 }}
               />
             </div>
@@ -342,7 +341,7 @@ export default function AccountView() {
                 padding: '9px 12px',
                 borderRadius: 'var(--radius-sm)',
                 background: 'var(--color-accent)',
-                color: '#FFFFFF',
+                color: 'var(--color-accent-ink)',
                 border: 'none',
                 fontSize: 12.5,
                 fontWeight: 700,
@@ -351,6 +350,9 @@ export default function AccountView() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 6,
+                boxShadow: 'var(--shadow-accent)',
+                transition: 'background-color 0.15s ease, opacity 0.15s ease',
+                opacity: isCreating ? 0.7 : 1,
               }}
             >
               <UserPlus size={14} />
@@ -397,3 +399,4 @@ export default function AccountView() {
     </div>
   );
 }
+

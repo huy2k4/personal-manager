@@ -39,20 +39,12 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   // Form Inputs for Back face (Schedule)
   const [schedTitle, setSchedTitle] = useState('');
   const [schedNote, setSchedNote] = useState('');
-
-  // Validated Date & Time fields
-  const now = new Date();
-  const initDay = String(now.getDate()).padStart(2, '0');
-  const initMonth = String(now.getMonth() + 1).padStart(2, '0');
-
-  const [dayStr, setDayStr] = useState(initDay);
-  const [monthStr, setMonthStr] = useState(initMonth);
-  const [hourStr, setHourStr] = useState('09');
-  const [minuteStr, setMinuteStr] = useState('00');
+  const [dateDigits, setDateDigits] = useState(''); // Empty -> displays _ _ / _ _ / 2026
+  const [schedTime, setSchedTime] = useState('09:00');
+  const [isDateFocused, setIsDateFocused] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  const monthInputRef = useRef<HTMLInputElement>(null);
-  const minuteInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const nativeDateRef = useRef<HTMLInputElement>(null);
 
   // Form Inputs for Back face (Guides & Glossary)
   const [guideQuestion, setGuideQuestion] = useState('');
@@ -118,60 +110,35 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     }
   };
 
-  // Date & Time Change Handlers with Validation
-  const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-    setDayStr(val);
+  const handleDigitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setDateDigits(raw);
     setFormError(null);
-    if (val.length === 2) {
-      const d = parseInt(val, 10);
-      if (d < 1 || d > 31) {
-        setFormError('Ngày không hợp lệ (01 - 31)');
-      } else if (monthInputRef.current) {
-        monthInputRef.current.focus();
+  };
+
+  const handleNativeDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value; // "YYYY-MM-DD"
+    if (!val) return;
+    const [y, m, d] = val.split('-');
+    setDateDigits(`${d}${m}${y.slice(-2)}`);
+    setFormError(null);
+  };
+
+  const openNativePicker = () => {
+    if (nativeDateRef.current) {
+      if ('showPicker' in HTMLInputElement.prototype) {
+        try {
+          nativeDateRef.current.showPicker();
+        } catch {
+          nativeDateRef.current.focus();
+        }
+      } else {
+        nativeDateRef.current.focus();
       }
     }
   };
 
-  const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-    setMonthStr(val);
-    setFormError(null);
-    if (val.length === 2) {
-      const m = parseInt(val, 10);
-      if (m < 1 || m > 12) {
-        setFormError('Tháng không hợp lệ (01 - 12)');
-      }
-    }
-  };
-
-  const handleHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-    setHourStr(val);
-    setFormError(null);
-    if (val.length === 2) {
-      const h = parseInt(val, 10);
-      if (h < 0 || h > 23) {
-        setFormError('Giờ không hợp lệ (00 - 23)');
-      } else if (minuteInputRef.current) {
-        minuteInputRef.current.focus();
-      }
-    }
-  };
-
-  const handleMinuteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-    setMinuteStr(val);
-    setFormError(null);
-    if (val.length === 2) {
-      const min = parseInt(val, 10);
-      if (min < 0 || min > 59) {
-        setFormError('Phút không hợp lệ (00 - 59)');
-      }
-    }
-  };
-
-  // Add Schedule with Strict Validation
+  // Add Schedule with Validation
   const handleAddSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -181,10 +148,14 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
       return;
     }
 
-    const d = parseInt(dayStr, 10);
-    const m = parseInt(monthStr, 10);
-    const h = parseInt(hourStr, 10);
-    const min = parseInt(minuteStr, 10);
+    if (dateDigits.length < 4) {
+      setFormError('Vui lòng nhập đủ ngày & tháng (ví dụ 1309)');
+      return;
+    }
+
+    const d = parseInt(dateDigits.slice(0, 2), 10);
+    const m = parseInt(dateDigits.slice(2, 4), 10);
+    const y = dateDigits.length >= 6 ? parseInt(`20${dateDigits.slice(4, 6)}`, 10) : 2026;
 
     if (isNaN(d) || d < 1 || d > 31) {
       setFormError('Ngày không hợp lệ (01 - 31)');
@@ -194,27 +165,21 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
       setFormError('Tháng không hợp lệ (01 - 12)');
       return;
     }
-    // Check max days for 30-day months & February
+
     if ([4, 6, 9, 11].includes(m) && d > 30) {
       setFormError(`Tháng ${m} chỉ có tối đa 30 ngày`);
       return;
     }
-    if (m === 2 && d > 29) {
-      setFormError('Tháng 2 chỉ có tối đa 28 hoặc 29 ngày');
-      return;
-    }
-
-    if (isNaN(h) || h < 0 || h > 23) {
-      setFormError('Giờ không hợp lệ (00 - 23)');
-      return;
-    }
-    if (isNaN(min) || min < 0 || min > 59) {
-      setFormError('Phút không hợp lệ (00 - 59)');
-      return;
+    if (m === 2) {
+      const isLeap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+      if (d > (isLeap ? 29 : 28)) {
+        setFormError(`Tháng 2/${y} chỉ có tối đa ${isLeap ? 29 : 28} ngày`);
+        return;
+      }
     }
 
     const formattedDate = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`;
-    const formattedTime = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+    const formattedTime = schedTime || '09:00';
 
     const newItem: ProjectSchedule = {
       id: `sch-${Date.now()}`,
@@ -228,6 +193,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     setSchedules((prev) => [...prev, newItem]);
     setSchedTitle('');
     setSchedNote('');
+    setDateDigits('');
 
     try {
       await supabase.from('project_schedules').insert({
@@ -351,7 +317,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
           position: 'relative',
           width: '100%',
           transformStyle: 'preserve-3d',
-          transition: 'transform 0.55s cubic-bezier(0.34, 1.3, 0.64, 1)',
+          transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
           transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
@@ -449,7 +415,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                       backgroundColor: item.done ? 'var(--color-surface-2)' : 'var(--color-surface)',
                       border: '1px solid var(--color-border)',
                       cursor: 'pointer',
-                      transition: 'all 150ms ease',
+                      transition: 'background-color 150ms ease, border-color 150ms ease',
                     }}
                   >
                     <div style={{ marginTop: 2 }}>
@@ -475,7 +441,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                         <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
                           <Clock size={11} color="var(--color-text-3)" />
                           <span style={{ fontSize: 10.5, color: 'var(--color-text-3)', fontVariantNumeric: 'tabular-nums' }}>
-                            {item.date} &bull; {item.time}
+                            Deadline: {item.date} &bull; {item.time}
                           </span>
                         </div>
                       </div>
@@ -623,12 +589,12 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                 padding: '5px 14px',
                 borderRadius: 'var(--radius-sm)',
                 background: 'var(--color-accent)',
-                color: '#FFFFFF',
+                color: 'var(--color-accent-ink)',
                 border: 'none',
                 fontSize: 12,
                 fontWeight: 700,
                 cursor: 'pointer',
-                transition: 'all 150ms ease',
+                transition: 'background-color 150ms ease, opacity 150ms ease',
               }}
             >
               Save
@@ -675,155 +641,308 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     background: 'var(--color-surface-2)',
                     fontSize: 12,
                     color: 'var(--color-text-1)',
-                    outline: 'none',
+                    transition: 'border-color 0.15s ease',
                   }}
                 />
 
-                {/* Date & Time Segmented Row with 26 Lock and Auto-Jump */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {/* Date Input Box (DD / MM / 26) */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                    }}
-                  >
-                    <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-3)' }}>
-                      Ngày (DD/MM/2026)
-                    </span>
+                {/* Quick Date Presets */}
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Hôm nay', offsetDays: 0 },
+                    { label: 'Ngày mai', offsetDays: 1 },
+                    { label: '+2 ngày', offsetDays: 2 },
+                    { label: '+1 tuần', offsetDays: 7 },
+                  ].map((preset) => {
+                    const target = new Date();
+                    target.setDate(target.getDate() + preset.offsetDays);
+                    const dd = String(target.getDate()).padStart(2, '0');
+                    const mm = String(target.getMonth() + 1).padStart(2, '0');
+                    const yy = String(target.getFullYear()).slice(-2);
+                    const targetDigits6 = `${dd}${mm}${yy}`;
+                    const targetDigits4 = `${dd}${mm}`;
+                    const isSelected = dateDigits === targetDigits6 || (dateDigits === targetDigits4 && yy === '26');
+                    return (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => {
+                          setDateDigits(targetDigits6);
+                          setFormError(null);
+                        }}
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: isSelected ? 650 : 500,
+                          padding: '3px 8px',
+                          borderRadius: 99,
+                          border: `1px solid ${isSelected ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                          background: isSelected ? 'var(--color-accent-bg)' : 'var(--color-surface-2)',
+                          color: isSelected ? 'var(--color-accent)' : 'var(--color-text-2)',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+                        }}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Deadline & Time Pickers */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: 8 }}>
+                  {/* Deadline Slot Input (_ _ / _ _ / 2 0 2 6) */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Calendar size={11} color="var(--color-accent)" />
+                        <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-2)' }}>
+                          Deadline
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 9.5, color: 'var(--color-text-3)', fontVariantNumeric: 'tabular-nums' }}>
+                        (DD/MM/YYYY)
+                      </span>
+                    </div>
+
                     <div
                       style={{
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'space-between',
                         borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--color-border)',
+                        border: isDateFocused ? '1px solid var(--color-accent)' : '1px solid var(--color-border)',
                         background: 'var(--color-surface-2)',
-                        padding: '3px 6px',
-                        gap: 2,
+                        padding: '0 8px',
+                        height: 34,
+                        boxSizing: 'border-box',
+                        cursor: 'text',
+                        position: 'relative',
+                        transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
+                        boxShadow: isDateFocused ? '0 0 0 2px var(--color-accent-ring)' : 'none',
                       }}
                     >
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="DD"
-                        value={dayStr}
-                        onChange={handleDayChange}
-                        maxLength={2}
-                        style={{
-                          width: 26,
-                          textAlign: 'center',
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--color-text-1)',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          padding: 0,
-                          outline: 'none',
-                        }}
-                      />
-                      <span style={{ color: 'var(--color-text-3)', fontSize: 11 }}>/</span>
-                      <input
-                        ref={monthInputRef}
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="MM"
-                        value={monthStr}
-                        onChange={handleMonthChange}
-                        maxLength={2}
-                        style={{
-                          width: 26,
-                          textAlign: 'center',
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--color-text-1)',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          padding: 0,
-                          outline: 'none',
-                        }}
-                      />
-                      <span style={{ color: 'var(--color-text-3)', fontSize: 11 }}>/</span>
+                      {/* Visual Formatted Slots */}
                       <div
-                        title="Năm 2026 (mặc định cố định)"
                         style={{
-                          fontSize: 11,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          fontSize: 13,
                           fontWeight: 600,
-                          color: 'var(--color-text-3)',
-                          padding: '1px 4px',
-                          borderRadius: 3,
-                          background: 'var(--color-surface-3, rgba(255,255,255,0.05))',
-                          userSelect: 'none',
+                          fontVariantNumeric: 'tabular-nums',
+                          lineHeight: 1,
+                          pointerEvents: 'none',
                         }}
                       >
-                        26
+                        {/* Day D1 */}
+                        <span
+                          style={{
+                            width: 10,
+                            textAlign: 'center',
+                            color: isDateFocused && dateDigits.length === 0
+                              ? 'var(--color-accent)'
+                              : dateDigits[0]
+                              ? 'var(--color-text-1)'
+                              : 'var(--color-text-3)',
+                            fontWeight: isDateFocused && dateDigits.length === 0 ? 700 : 600,
+                          }}
+                        >
+                          {dateDigits[0] || '_'}
+                        </span>
+
+                        {/* Day D2 */}
+                        <span
+                          style={{
+                            width: 10,
+                            textAlign: 'center',
+                            color: isDateFocused && dateDigits.length === 1
+                              ? 'var(--color-accent)'
+                              : dateDigits[1]
+                              ? 'var(--color-text-1)'
+                              : 'var(--color-text-3)',
+                            fontWeight: isDateFocused && dateDigits.length === 1 ? 700 : 600,
+                          }}
+                        >
+                          {dateDigits[1] || '_'}
+                        </span>
+
+                        <span style={{ color: 'var(--color-text-3)', margin: '0 2px', fontWeight: 400 }}>/</span>
+
+                        {/* Month M1 */}
+                        <span
+                          style={{
+                            width: 10,
+                            textAlign: 'center',
+                            color: isDateFocused && dateDigits.length === 2
+                              ? 'var(--color-accent)'
+                              : dateDigits[2]
+                              ? 'var(--color-text-1)'
+                              : 'var(--color-text-3)',
+                            fontWeight: isDateFocused && dateDigits.length === 2 ? 700 : 600,
+                          }}
+                        >
+                          {dateDigits[2] || '_'}
+                        </span>
+
+                        {/* Month M2 */}
+                        <span
+                          style={{
+                            width: 10,
+                            textAlign: 'center',
+                            color: isDateFocused && dateDigits.length === 3
+                              ? 'var(--color-accent)'
+                              : dateDigits[3]
+                              ? 'var(--color-text-1)'
+                              : 'var(--color-text-3)',
+                            fontWeight: isDateFocused && dateDigits.length === 3 ? 700 : 600,
+                          }}
+                        >
+                          {dateDigits[3] || '_'}
+                        </span>
+
+                        <span style={{ color: 'var(--color-text-3)', margin: '0 2px', fontWeight: 400 }}>/</span>
+
+                        {/* Century Prefix: 2 0 (Fixed, but styled identically to other digits) */}
+                        <span style={{ width: 10, textAlign: 'center', color: dateDigits.length >= 4 ? 'var(--color-text-1)' : 'var(--color-text-2)' }}>
+                          2
+                        </span>
+                        <span style={{ width: 10, textAlign: 'center', color: dateDigits.length >= 4 ? 'var(--color-text-1)' : 'var(--color-text-2)' }}>
+                          0
+                        </span>
+
+                        {/* Year Y1 (Editable) */}
+                        <span
+                          style={{
+                            width: 10,
+                            textAlign: 'center',
+                            color: isDateFocused && dateDigits.length === 4
+                              ? 'var(--color-accent)'
+                              : dateDigits.length >= 5
+                              ? 'var(--color-text-1)'
+                              : dateDigits.length >= 4
+                              ? 'var(--color-text-1)'
+                              : 'var(--color-text-2)',
+                            fontWeight: isDateFocused && dateDigits.length === 4 ? 700 : 600,
+                          }}
+                        >
+                          {dateDigits[4] || '2'}
+                        </span>
+
+                        {/* Year Y2 (Editable) */}
+                        <span
+                          style={{
+                            width: 10,
+                            textAlign: 'center',
+                            color: isDateFocused && dateDigits.length === 5
+                              ? 'var(--color-accent)'
+                              : dateDigits.length >= 6
+                              ? 'var(--color-text-1)'
+                              : dateDigits.length === 5
+                              ? 'var(--color-accent)'
+                              : dateDigits.length >= 4
+                              ? 'var(--color-text-1)'
+                              : 'var(--color-text-2)',
+                            fontWeight: isDateFocused && dateDigits.length === 5 ? 700 : 600,
+                          }}
+                        >
+                          {dateDigits[5] || (dateDigits.length === 5 ? '_' : '6')}
+                        </span>
                       </div>
+
+                      {/* Actual transparent input capturing mobile keypad and desktop keystrokes */}
+                      <input
+                        ref={dateInputRef}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={6}
+                        autoComplete="off"
+                        value={dateDigits}
+                        onChange={handleDigitChange}
+                        onFocus={() => setIsDateFocused(true)}
+                        onBlur={() => setIsDateFocused(false)}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          opacity: 0,
+                          cursor: 'text',
+                          zIndex: 1,
+                        }}
+                      />
+
+                      {/* Native calendar trigger button */}
+                      <button
+                        type="button"
+                        title="Chọn từ lịch"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openNativePicker();
+                        }}
+                        style={{
+                          position: 'relative',
+                          zIndex: 2,
+                          background: 'none',
+                          border: 'none',
+                          padding: 2,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--color-text-3)',
+                          transition: 'color 0.15s ease',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-3)')}
+                      >
+                        <Calendar size={13} />
+                      </button>
+
+                      <input
+                        ref={nativeDateRef}
+                        type="date"
+                        tabIndex={-1}
+                        onChange={handleNativeDateChange}
+                        style={{
+                          position: 'absolute',
+                          opacity: 0,
+                          pointerEvents: 'none',
+                          width: 0,
+                          height: 0,
+                        }}
+                      />
                     </div>
                   </div>
 
-                  {/* Time Input Box (HH : MM) */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                    }}
-                  >
-                    <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-3)' }}>
-                      Giờ (HH:MM)
-                    </span>
-                    <div
+                  {/* Time Picker */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={11} color="var(--color-accent)" />
+                      <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-2)' }}>
+                        Giờ
+                      </span>
+                    </div>
+                    <input
+                      type="time"
+                      value={schedTime}
+                      onChange={(e) => {
+                        setSchedTime(e.target.value);
+                        setFormError(null);
+                      }}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
+                        width: '100%',
+                        padding: '6px 8px',
                         borderRadius: 'var(--radius-sm)',
                         border: '1px solid var(--color-border)',
                         background: 'var(--color-surface-2)',
-                        padding: '3px 6px',
-                        gap: 2,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: 'var(--color-text-1)',
+                        transition: 'border-color 0.15s ease',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
                       }}
-                    >
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="09"
-                        value={hourStr}
-                        onChange={handleHourChange}
-                        maxLength={2}
-                        style={{
-                          width: 26,
-                          textAlign: 'center',
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--color-text-1)',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          padding: 0,
-                          outline: 'none',
-                        }}
-                      />
-                      <span style={{ color: 'var(--color-text-3)', fontSize: 11 }}>:</span>
-                      <input
-                        ref={minuteInputRef}
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="00"
-                        value={minuteStr}
-                        onChange={handleMinuteChange}
-                        maxLength={2}
-                        style={{
-                          width: 26,
-                          textAlign: 'center',
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--color-text-1)',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          padding: 0,
-                          outline: 'none',
-                        }}
-                      />
-                    </div>
+                    />
                   </div>
                 </div>
 
@@ -905,7 +1024,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                         }}
                       >
                         <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {s.title} ({s.date} - {s.time})
+                          {s.title} (Deadline: {s.date} &bull; {s.time})
                         </span>
                         <button
                           onClick={(e) => handleDeleteSchedule(s.id, e)}

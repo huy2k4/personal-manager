@@ -47,15 +47,15 @@ export default function LoginView() {
             width: 48,
             height: 48,
             borderRadius: 14,
-            background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+            background: 'var(--color-accent)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 14px',
-            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.28)',
+            boxShadow: 'var(--shadow-accent)',
           }}
         >
-          <Sparkles size={24} color="#FFFFFF" />
+          <Sparkles size={24} color="var(--color-accent-ink)" />
         </div>
         <h1
           style={{
@@ -80,7 +80,7 @@ export default function LoginView() {
           width: '100%',
           maxWidth: 380,
           padding: '26px 22px',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.07)',
+          boxShadow: 'var(--shadow-elevated)',
           borderRadius: 'var(--radius-lg, 16px)',
         }}
       >
@@ -97,7 +97,7 @@ export default function LoginView() {
               padding: '10px 12px',
               borderRadius: 'var(--radius-sm)',
               background: 'var(--color-danger-bg)',
-              border: '1px solid rgba(220, 38, 38, 0.2)',
+              border: '1px solid var(--color-danger)',
               color: 'var(--color-danger)',
               fontSize: 12,
               fontWeight: 500,
@@ -139,14 +139,14 @@ export default function LoginView() {
                 autoCorrect="off"
                 style={{
                   width: '100%',
-                  padding: '11px 12px 11px 36px',
+                  height: 42,
+                  padding: '0 12px 0 36px',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--color-border)',
                   background: 'var(--color-surface-2)',
                   fontSize: 13,
                   color: 'var(--color-text-1)',
-                  outline: 'none',
-                  transition: 'border-color 0.2s ease',
+                  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                 }}
               />
             </div>
@@ -180,14 +180,14 @@ export default function LoginView() {
                 placeholder="Nhập mật khẩu..."
                 style={{
                   width: '100%',
-                  padding: '11px 12px 11px 36px',
+                  height: 42,
+                  padding: '0 12px 0 36px',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--color-border)',
                   background: 'var(--color-surface-2)',
                   fontSize: 13,
                   color: 'var(--color-text-1)',
-                  outline: 'none',
-                  transition: 'border-color 0.2s ease',
+                  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                 }}
               />
             </div>
@@ -197,12 +197,14 @@ export default function LoginView() {
           <button
             type="submit"
             disabled={loading}
+            aria-busy={loading}
             style={{
               marginTop: 8,
-              padding: '12px',
+              height: 42,
+              padding: '0 16px',
               borderRadius: 'var(--radius-sm)',
               background: 'var(--color-accent)',
-              color: '#FFFFFF',
+              color: 'var(--color-accent-ink)',
               border: 'none',
               fontSize: 13.5,
               fontWeight: 700,
@@ -211,8 +213,8 @@ export default function LoginView() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-              transition: 'all 0.2s ease',
+              boxShadow: 'var(--shadow-accent)',
+              transition: 'background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease',
               opacity: loading ? 0.7 : 1,
             }}
           >
@@ -238,3 +240,4 @@ export default function LoginView() {
     </div>
   );
 }
+
