@@ -277,29 +277,6 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
               <span className="text-xs text-3">
                 {doneCount}/{schedules.length} xong
               </span>
-              <button
-                title="Nhấn đúp vào card hoặc nhấn nút này để chỉnh sửa"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsFlipped(true);
-                }}
-                style={{
-                  background: 'var(--color-surface-2)',
-                  border: '1px solid var(--color-border-2)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '3px 6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 3,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: 'var(--color-text-3)',
-                  cursor: 'pointer',
-                }}
-              >
-                <Edit3 size={11} color="var(--color-accent)" />
-                <span>Sửa</span>
-              </button>
             </div>
           </div>
 

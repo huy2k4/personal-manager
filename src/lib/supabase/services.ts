@@ -7,7 +7,7 @@ export type ContractRow = Database['public']['Tables']['contracts']['Row'];
 export type WorkProjectRow = Database['public']['Tables']['work_projects']['Row'];
 
 /**
- * Fetch all tasks (with fallback to mock data if not connected)
+ * Fetch all tasks (with fallback to empty array if not connected)
  */
 export async function fetchTasks() {
   try {
@@ -16,7 +16,7 @@ export async function fetchTasks() {
       .select('*')
       .order('created_at', { ascending: true });
 
-    if (error || !data || data.length === 0) {
+    if (error || !data) {
       return fallbackTasks;
     }
     return data;
@@ -42,7 +42,7 @@ export async function toggleTaskDone(taskId: string, done: boolean) {
 }
 
 /**
- * Fetch Work Projects & Schedules
+ * Fetch Work Projects, Schedules, Guides & Glossary from Supabase
  */
 export async function fetchWorkProjects() {
   try {
@@ -58,10 +58,18 @@ export async function fetchWorkProjects() {
       .from('project_schedules')
       .select('*');
 
+    const { data: guides } = await supabase
+      .from('project_guides')
+      .select('*');
+
+    const { data: glossary } = await supabase
+      .from('project_glossary')
+      .select('*');
+
     return projects.map((p) => ({
       id: p.id,
       name: p.name,
-      tagline: p.tagline,
+      tagline: p.tagline || '',
       type: p.type,
       accentColor: p.accent_color,
       logoUrl: p.logo_url,
@@ -74,6 +82,20 @@ export async function fetchWorkProjects() {
           date: s.date,
           done: s.done,
           note: s.note,
+        })),
+      guides: (guides || [])
+        .filter((g) => g.project_id === p.id)
+        .map((g) => ({
+          id: g.id,
+          question: g.question,
+          answer: g.answer,
+        })),
+      glossary: (glossary || [])
+        .filter((gl) => gl.project_id === p.id)
+        .map((gl) => ({
+          id: gl.id,
+          term: gl.term,
+          definition: gl.definition,
         })),
     }));
   } catch {
@@ -91,7 +113,7 @@ export async function fetchContracts() {
       .select('*')
       .order('deadline', { ascending: true });
 
-    if (error || !data || data.length === 0) {
+    if (error || !data) {
       return fallbackContracts;
     }
     return data;
@@ -99,3 +121,4 @@ export async function fetchContracts() {
     return fallbackContracts;
   }
 }
+
