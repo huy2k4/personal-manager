@@ -2,7 +2,9 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRefresh } from '@/lib/refresh-context';
-import { workProjects } from '@/lib/mock-data';
+import { workProjects as fallbackProjects } from '@/lib/mock-data';
+import { fetchWorkProjects } from '@/lib/supabase/services';
+import type { WorkProject } from '@/types';
 
 const VN_ZONE   = 'Asia/Ho_Chi_Minh';
 const MONTH_ABR = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -76,7 +78,21 @@ function playHapticTick() {
 }
 
 export default function WorkProgressCard() {
-  const { isRefreshing } = useRefresh();
+  const { isRefreshing, registerRefreshHandler } = useRefresh();
+  const [projects, setProjects] = useState<WorkProject[]>(fallbackProjects);
+
+  const loadData = useCallback(async () => {
+    const data = await fetchWorkProjects();
+    if (data && data.length > 0) {
+      setProjects(data as WorkProject[]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+    return registerRefreshHandler('work-progress-card', loadData);
+  }, [loadData, registerRefreshHandler]);
+
   const today     = useRef(getVNToday()).current;
   const todayDDMM = toDDMM(today);
 
@@ -87,16 +103,16 @@ export default function WorkProgressCard() {
   const days      = Array.from({ length: 7 }, (_, i) => addDays(addDays(today, windowOffset), i));
   const windowSet = new Set(days.map(toDDMM));
 
-  const projStats = workProjects.map(p => ({
+  const projStats = projects.map(p => ({
     id: p.id, name: p.name, logoUrl: p.logoUrl,
     color: PROJ_COLORS[p.id] ?? '#6B6B6B',
-    count: p.schedules.filter(s => windowSet.has(s.date)).length,
+    count: (p.schedules || []).filter(s => windowSet.has(s.date)).length,
   }));
   const maxProj = Math.max(...projStats.map(s => s.count), 1);
 
   const dayCounts = days.map(day => {
     const dm = toDDMM(day);
-    return workProjects.reduce((s, p) => s + p.schedules.filter(x => x.date === dm).length, 0);
+    return projects.reduce((s, p) => s + (p.schedules || []).filter(x => x.date === dm).length, 0);
   });
   const maxDay = Math.max(...dayCounts, 1);
 

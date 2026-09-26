@@ -9,6 +9,7 @@ import {
   Circle,
   Clock,
   Trash2,
+  AlertCircle,
 } from 'lucide-react';
 import type { WorkProject, ProjectSchedule, ProjectGuide, ProjectGlossary } from '@/types';
 import { supabase } from '@/lib/supabase/client';
@@ -35,12 +36,25 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   );
   const [openTermId, setOpenTermId] = useState<string | null>(null);
 
-  // Form Inputs for Back face
+  // Form Inputs for Back face (Schedule)
   const [schedTitle, setSchedTitle] = useState('');
-  const [schedTime, setSchedTime] = useState('09:00');
-  const [schedDate, setSchedDate] = useState('26/09');
   const [schedNote, setSchedNote] = useState('');
 
+  // Validated Date & Time fields
+  const now = new Date();
+  const initDay = String(now.getDate()).padStart(2, '0');
+  const initMonth = String(now.getMonth() + 1).padStart(2, '0');
+
+  const [dayStr, setDayStr] = useState(initDay);
+  const [monthStr, setMonthStr] = useState(initMonth);
+  const [hourStr, setHourStr] = useState('09');
+  const [minuteStr, setMinuteStr] = useState('00');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const monthInputRef = useRef<HTMLInputElement>(null);
+  const minuteInputRef = useRef<HTMLInputElement>(null);
+
+  // Form Inputs for Back face (Guides & Glossary)
   const [guideQuestion, setGuideQuestion] = useState('');
   const [guideAnswer, setGuideAnswer] = useState('');
 
@@ -62,12 +76,12 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
       return;
     }
 
-    const now = Date.now();
-    if (now - lastTapRef.current < 350) {
+    const t = Date.now();
+    if (t - lastTapRef.current < 350) {
       setIsFlipped((prev) => !prev);
       lastTapRef.current = 0;
     } else {
-      lastTapRef.current = now;
+      lastTapRef.current = t;
     }
   };
 
@@ -104,16 +118,109 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     }
   };
 
-  // Add Schedule
+  // Date & Time Change Handlers with Validation
+  const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setDayStr(val);
+    setFormError(null);
+    if (val.length === 2) {
+      const d = parseInt(val, 10);
+      if (d < 1 || d > 31) {
+        setFormError('Ngày không hợp lệ (01 - 31)');
+      } else if (monthInputRef.current) {
+        monthInputRef.current.focus();
+      }
+    }
+  };
+
+  const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setMonthStr(val);
+    setFormError(null);
+    if (val.length === 2) {
+      const m = parseInt(val, 10);
+      if (m < 1 || m > 12) {
+        setFormError('Tháng không hợp lệ (01 - 12)');
+      }
+    }
+  };
+
+  const handleHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setHourStr(val);
+    setFormError(null);
+    if (val.length === 2) {
+      const h = parseInt(val, 10);
+      if (h < 0 || h > 23) {
+        setFormError('Giờ không hợp lệ (00 - 23)');
+      } else if (minuteInputRef.current) {
+        minuteInputRef.current.focus();
+      }
+    }
+  };
+
+  const handleMinuteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setMinuteStr(val);
+    setFormError(null);
+    if (val.length === 2) {
+      const min = parseInt(val, 10);
+      if (min < 0 || min > 59) {
+        setFormError('Phút không hợp lệ (00 - 59)');
+      }
+    }
+  };
+
+  // Add Schedule with Strict Validation
   const handleAddSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!schedTitle.trim()) return;
+    setFormError(null);
+
+    if (!schedTitle.trim()) {
+      setFormError('Vui lòng nhập tiêu đề công việc');
+      return;
+    }
+
+    const d = parseInt(dayStr, 10);
+    const m = parseInt(monthStr, 10);
+    const h = parseInt(hourStr, 10);
+    const min = parseInt(minuteStr, 10);
+
+    if (isNaN(d) || d < 1 || d > 31) {
+      setFormError('Ngày không hợp lệ (01 - 31)');
+      return;
+    }
+    if (isNaN(m) || m < 1 || m > 12) {
+      setFormError('Tháng không hợp lệ (01 - 12)');
+      return;
+    }
+    // Check max days for 30-day months & February
+    if ([4, 6, 9, 11].includes(m) && d > 30) {
+      setFormError(`Tháng ${m} chỉ có tối đa 30 ngày`);
+      return;
+    }
+    if (m === 2 && d > 29) {
+      setFormError('Tháng 2 chỉ có tối đa 28 hoặc 29 ngày');
+      return;
+    }
+
+    if (isNaN(h) || h < 0 || h > 23) {
+      setFormError('Giờ không hợp lệ (00 - 23)');
+      return;
+    }
+    if (isNaN(min) || min < 0 || min > 59) {
+      setFormError('Phút không hợp lệ (00 - 59)');
+      return;
+    }
+
+    const formattedDate = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`;
+    const formattedTime = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
 
     const newItem: ProjectSchedule = {
       id: `sch-${Date.now()}`,
       title: schedTitle.trim(),
-      time: schedTime,
-      date: schedDate,
+      time: formattedTime,
+      date: formattedDate,
       done: false,
       note: schedNote.trim() || undefined,
     };
@@ -468,7 +575,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
             transform: 'rotateY(180deg)',
             display: 'flex',
             flexDirection: 'column',
-            minHeight: 340,
+            minHeight: 360,
             background: 'var(--color-surface)',
             border: '2px solid var(--color-accent)',
             boxShadow: '0 8px 30px rgba(37, 99, 235, 0.15)',
@@ -554,11 +661,12 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
           {editTab === 'schedule' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <form onSubmit={handleAddSchedule} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {/* Title */}
                 <input
                   type="text"
                   placeholder="Tiêu đề công việc cần làm..."
                   value={schedTitle}
-                  onChange={(e) => setSchedTitle(e.target.value)}
+                  onChange={(e) => { setSchedTitle(e.target.value); setFormError(null); }}
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -570,36 +678,176 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     outline: 'none',
                   }}
                 />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  <input
-                    type="text"
-                    placeholder="Giờ (VD: 09:00)"
-                    value={schedTime}
-                    onChange={(e) => setSchedTime(e.target.value)}
+
+                {/* Date & Time Segmented Row with 26 Lock and Auto-Jump */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {/* Date Input Box (DD / MM / 26) */}
+                  <div
                     style={{
-                      padding: '7px 9px',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border)',
-                      background: 'var(--color-surface-2)',
-                      fontSize: 12,
-                      color: 'var(--color-text-1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 3,
                     }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Ngày (VD: 26/09)"
-                    value={schedDate}
-                    onChange={(e) => setSchedDate(e.target.value)}
+                  >
+                    <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-3)' }}>
+                      Ngày (DD/MM/2026)
+                    </span>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-surface-2)',
+                        padding: '3px 6px',
+                        gap: 2,
+                      }}
+                    >
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="DD"
+                        value={dayStr}
+                        onChange={handleDayChange}
+                        maxLength={2}
+                        style={{
+                          width: 26,
+                          textAlign: 'center',
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--color-text-1)',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          padding: 0,
+                          outline: 'none',
+                        }}
+                      />
+                      <span style={{ color: 'var(--color-text-3)', fontSize: 11 }}>/</span>
+                      <input
+                        ref={monthInputRef}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="MM"
+                        value={monthStr}
+                        onChange={handleMonthChange}
+                        maxLength={2}
+                        style={{
+                          width: 26,
+                          textAlign: 'center',
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--color-text-1)',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          padding: 0,
+                          outline: 'none',
+                        }}
+                      />
+                      <span style={{ color: 'var(--color-text-3)', fontSize: 11 }}>/</span>
+                      <div
+                        title="Năm 2026 (mặc định cố định)"
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: 'var(--color-text-3)',
+                          padding: '1px 4px',
+                          borderRadius: 3,
+                          background: 'var(--color-surface-3, rgba(255,255,255,0.05))',
+                          userSelect: 'none',
+                        }}
+                      >
+                        26
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Time Input Box (HH : MM) */}
+                  <div
                     style={{
-                      padding: '7px 9px',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-border)',
-                      background: 'var(--color-surface-2)',
-                      fontSize: 12,
-                      color: 'var(--color-text-1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 3,
                     }}
-                  />
+                  >
+                    <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--color-text-3)' }}>
+                      Giờ (HH:MM)
+                    </span>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-surface-2)',
+                        padding: '3px 6px',
+                        gap: 2,
+                      }}
+                    >
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="09"
+                        value={hourStr}
+                        onChange={handleHourChange}
+                        maxLength={2}
+                        style={{
+                          width: 26,
+                          textAlign: 'center',
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--color-text-1)',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          padding: 0,
+                          outline: 'none',
+                        }}
+                      />
+                      <span style={{ color: 'var(--color-text-3)', fontSize: 11 }}>:</span>
+                      <input
+                        ref={minuteInputRef}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="00"
+                        value={minuteStr}
+                        onChange={handleMinuteChange}
+                        maxLength={2}
+                        style={{
+                          width: 26,
+                          textAlign: 'center',
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--color-text-1)',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          padding: 0,
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Validation Error Message */}
+                {formError && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      padding: '4px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      color: 'var(--color-danger)',
+                      fontSize: 11,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <AlertCircle size={13} style={{ flexShrink: 0 }} />
+                    <span>{formError}</span>
+                  </div>
+                )}
+
+                {/* Note */}
                 <input
                   type="text"
                   placeholder="Ghi chú chi tiết (nếu có)..."
@@ -614,6 +862,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     color: 'var(--color-text-1)',
                   }}
                 />
+
                 <button
                   type="submit"
                   style={{
@@ -656,7 +905,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                         }}
                       >
                         <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {s.title} ({s.date})
+                          {s.title} ({s.date} - {s.time})
                         </span>
                         <button
                           onClick={(e) => handleDeleteSchedule(s.id, e)}
