@@ -1,7 +1,7 @@
 'use client';
 
 import { TrendingUp, Wallet, ArrowUpRight, DollarSign } from 'lucide-react';
-import CryptoCard from '@/components/cards/CryptoCard';
+import CryptoChartCard from '@/components/cards/CryptoChartCard';
 import { contracts, cryptoAssets } from '@/lib/mock-data';
 import ProgressBar from '@/components/ui/ProgressBar';
 
@@ -62,8 +62,8 @@ export default function FinanceView() {
         </div>
       </div>
 
-      {/* Crypto Portfolio */}
-      <CryptoCard />
+      {/* Crypto H1 Real-time Chart */}
+      <CryptoChartCard />
     </div>
   );
 }

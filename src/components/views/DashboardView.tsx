@@ -20,6 +20,7 @@ import {
   workProjects,
 } from '@/lib/mock-data';
 import WorkProgressCard from '@/components/cards/WorkProgressCard';
+import CryptoChartCard from '@/components/cards/CryptoChartCard';
 
 interface DashboardViewProps {
   onNavigate: (tab: NavId) => void;
@@ -39,10 +40,13 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-      {/* ─── 1. Work Progress Card ─── */}
+      {/* ─── 1. Work Progress Card (4x2) ─── */}
       <WorkProgressCard />
 
-      {/* ─── 2. Khối KPI Thống kê 2x2 ─── */}
+      {/* ─── 2. Crypto Chart Card (4x1) ─── */}
+      <CryptoChartCard />
+
+      {/* ─── 3. Khối KPI Thống kê 2x2 ─── */}
       <div className="bento-grid" style={{ padding: 0 }}>
         {/* KPI 1: 3 Dự án Việc */}
         <div className="kpi-card" onClick={() => onNavigate('work')} style={{ cursor: 'pointer' }}>

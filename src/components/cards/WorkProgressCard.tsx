@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { workProjects } from '@/lib/mock-data';
 
 const VN_ZONE   = 'Asia/Ho_Chi_Minh';
 const MONTH_ABR = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const DAY_ABR   = ['S','M','T','W','T','F','S'];
 const DAY_PX    = 46;
-const COL_H     = 44;
+const COL_H     = 34;
 
 function getVNToday(): Date {
   const iso = new Intl.DateTimeFormat('sv-SE', { timeZone: VN_ZONE }).format(new Date());
@@ -99,11 +99,7 @@ export default function WorkProgressCard() {
   const maxDay = Math.max(...dayCounts, 1);
 
   // ── Drag + high momentum (up to 13 days) ──────────────────────────────────
-  const startX       = useRef<number|null>(null);
-  const startY       = useRef(0);
-  const isH          = useRef<boolean|null>(null);
-  const baseOff      = useRef(0);
-  const touchHistory = useRef<{ x: number; t: number }[]>([]);
+  const cardRef      = useRef<HTMLDivElement>(null);
   const tmr          = useRef<ReturnType<typeof setTimeout>|null>(null);
 
   const killTimer = () => { if (tmr.current) { clearTimeout(tmr.current); tmr.current = null; } };
@@ -124,7 +120,7 @@ export default function WorkProgressCard() {
       
       const left = Math.abs(targetOffset - next);
       if (left > 0) {
-        // Natural ease-out deceleration curve: fast at start (~24ms), slow at end (~135ms)
+        // Natural ease-out deceleration curve: fast at start (~22ms), slow at end (~135ms)
         const progress = (totalSteps - left) / totalSteps;
         const delay = Math.round(22 + Math.pow(progress, 1.7) * 115);
         tmr.current = setTimeout(() => step(left), delay);
@@ -134,61 +130,187 @@ export default function WorkProgressCard() {
     step(totalSteps);
   }, [setOffset]);
 
-  const handlePointerStart = (clientX: number, clientY: number, timeStamp: number) => {
+  // Touch gesture with strict direction locking & preventDefault on horizontal swipe
+  const touchState = useRef({
+    startX: 0,
+    startY: 0,
+    baseOff: 0,
+    isH: null as boolean | null,
+    isLocked: false,
+    history: [] as { x: number; t: number }[],
+    active: false,
+  });
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      killTimer();
+      getAudioContext();
+      const t = e.touches[0];
+      touchState.current = {
+        startX: t.clientX,
+        startY: t.clientY,
+        baseOff: offsetRef.current,
+        isH: null,
+        isLocked: false,
+        history: [{ x: t.clientX, t: e.timeStamp }],
+        active: true,
+      };
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const s = touchState.current;
+      if (!s.active) return;
+
+      const t = e.touches[0];
+      const dx = t.clientX - s.startX;
+      const dy = t.clientY - s.startY;
+
+      // Lock direction after 7px displacement
+      if (!s.isLocked) {
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
+        if (absX >= 7 || absY >= 7) {
+          s.isLocked = true;
+          // Horizontal intent: horizontal distance clearly beats vertical
+          s.isH = absX > absY * 1.15;
+        }
+      }
+
+      // If locked horizontal: prevent native page scroll and shift days
+      if (s.isH === true) {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        const now = e.timeStamp;
+        s.history.push({ x: t.clientX, t: now });
+        s.history = s.history.filter(p => now - p.t <= 120);
+
+        const shift = -Math.round(dx / DAY_PX);
+        const newOff = s.baseOff + shift;
+        if (newOff !== offsetRef.current) {
+          setOffset(newOff);
+          playHapticTick();
+        }
+      }
+      // If locked vertical (s.isH === false): do nothing, browser scrolls smoothly
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const s = touchState.current;
+      if (!s.active) return;
+      s.active = false;
+
+      if (s.isH === true) {
+        const history = s.history;
+        let vel = 0;
+        if (history.length >= 2) {
+          const first = history[0];
+          const last  = history[history.length - 1];
+          const dt    = Math.max(last.t - first.t, 10);
+          vel = (first.x - last.x) / dt;
+        }
+
+        if (Math.abs(vel) > 0.12) {
+          const rawSteps = Math.round(Math.abs(vel) * 5.2);
+          const mom = Math.sign(vel) * Math.min(Math.max(rawSteps, 1), 13);
+          if (mom !== 0) {
+            startMomentum(offsetRef.current + mom);
+          }
+        }
+      }
+
+      s.isH = null;
+      s.isLocked = false;
+      s.history = [];
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [setOffset, startMomentum]);
+
+  // Desktop mouse drag handlers
+  const mouseState = useRef({
+    active: false,
+    startX: 0,
+    startY: 0,
+    baseOff: 0,
+    isH: null as boolean | null,
+    isLocked: false,
+    history: [] as { x: number; t: number }[],
+  });
+
+  const onMouseDown = (e: React.MouseEvent) => {
     killTimer();
     getAudioContext();
-    startX.current  = clientX;
-    startY.current  = clientY;
-    baseOff.current = offsetRef.current;
-    isH.current     = null;
-    touchHistory.current = [{ x: clientX, t: timeStamp }];
+    mouseState.current = {
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseOff: offsetRef.current,
+      isH: null,
+      isLocked: false,
+      history: [{ x: e.clientX, t: e.timeStamp }],
+    };
   };
 
-  const handlePointerMove = (clientX: number, clientY: number, timeStamp: number) => {
-    if (startX.current === null) return;
-    const dx = clientX - startX.current;
-    const dy = clientY - startY.current;
-    if (isH.current === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
-      isH.current = Math.abs(dx) > Math.abs(dy);
+  const onMouseMove = (e: React.MouseEvent) => {
+    const s = mouseState.current;
+    if (!s.active || e.buttons !== 1) return;
+    const dx = e.clientX - s.startX;
+    const dy = e.clientY - s.startY;
+    if (!s.isLocked) {
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      if (absX >= 5 || absY >= 5) {
+        s.isLocked = true;
+        s.isH = absX >= absY;
+      }
     }
-    if (!isH.current) return;
-    
-    // Store points within the last 120ms
-    touchHistory.current.push({ x: clientX, t: timeStamp });
-    const cutoff = timeStamp - 120;
-    touchHistory.current = touchHistory.current.filter(p => p.t >= cutoff);
+    if (s.isH) {
+      const now = e.timeStamp;
+      s.history.push({ x: e.clientX, t: now });
+      s.history = s.history.filter(p => now - p.t <= 120);
 
-    const shift  = -Math.round(dx / DAY_PX);
-    const newOff = baseOff.current + shift;
-    if (newOff !== offsetRef.current) {
-      setOffset(newOff);
-      playHapticTick();
+      const shift = -Math.round(dx / DAY_PX);
+      const newOff = s.baseOff + shift;
+      if (newOff !== offsetRef.current) {
+        setOffset(newOff);
+        playHapticTick();
+      }
     }
   };
 
-  const handlePointerEnd = (timeStamp: number) => {
-    if (startX.current === null || !isH.current) {
-      startX.current = null;
-      touchHistory.current = [];
-      return;
-    }
-    const history = touchHistory.current;
-    let vel = 0;
-    if (history.length >= 2) {
-      const first = history[0];
-      const last  = history[history.length - 1];
-      const dt    = Math.max(last.t - first.t, 10);
-      vel = (first.x - last.x) / dt; // px per ms (positive when swiped left -> next days)
-    }
-    startX.current = null;
-    touchHistory.current = [];
-
-    // Map velocity to momentum steps: max 13 days
-    if (Math.abs(vel) > 0.12) {
-      const rawSteps = Math.round(Math.abs(vel) * 5.2);
-      const mom = Math.sign(vel) * Math.min(Math.max(rawSteps, 1), 13);
-      if (mom !== 0) {
-        startMomentum(offsetRef.current + mom);
+  const onMouseUp = (e: React.MouseEvent) => {
+    const s = mouseState.current;
+    if (!s.active) return;
+    s.active = false;
+    if (s.isH) {
+      const history = s.history;
+      let vel = 0;
+      if (history.length >= 2) {
+        const first = history[0];
+        const last  = history[history.length - 1];
+        const dt    = Math.max(last.t - first.t, 10);
+        vel = (first.x - last.x) / dt;
+      }
+      if (Math.abs(vel) > 0.12) {
+        const rawSteps = Math.round(Math.abs(vel) * 5.2);
+        const mom = Math.sign(vel) * Math.min(Math.max(rawSteps, 1), 13);
+        if (mom !== 0) {
+          startMomentum(offsetRef.current + mom);
+        }
       }
     }
   };
@@ -197,15 +319,13 @@ export default function WorkProgressCard() {
 
   return (
     <div
+      ref={cardRef}
       className="card bento-full"
       style={{ padding: '16px 14px 12px', userSelect:'none', touchAction:'pan-y', cursor: 'grab' }}
-      onTouchStart={(e) => handlePointerStart(e.touches[0].clientX, e.touches[0].clientY, e.timeStamp)}
-      onTouchMove={(e) => handlePointerMove(e.touches[0].clientX, e.touches[0].clientY, e.timeStamp)}
-      onTouchEnd={(e) => handlePointerEnd(e.timeStamp)}
-      onMouseDown={(e) => handlePointerStart(e.clientX, e.clientY, e.timeStamp)}
-      onMouseMove={(e) => { if (e.buttons === 1) handlePointerMove(e.clientX, e.clientY, e.timeStamp); }}
-      onMouseUp={(e) => handlePointerEnd(e.timeStamp)}
-      onMouseLeave={(e) => { if (startX.current !== null) handlePointerEnd(e.timeStamp); }}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
     >
       {/* ── Header: month + date range ─────────────────────────── */}
       <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:10 }}>
@@ -218,48 +338,46 @@ export default function WorkProgressCard() {
       </div>
 
       {/* ── Column chart + day labels ──────────────────────────── */}
-      <div style={{ marginBottom:12 }}>
+      <div style={{ marginBottom: 10 }}>
         {/* Bars */}
-        <div style={{ display:'flex', alignItems:'flex-end', gap:5, height: COL_H, margin:'0 auto', width:'fit-content' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: COL_H, margin: '0 auto', width: 'fit-content' }}>
           {days.map((day, i) => {
             const dm      = toDDMM(day);
             const isToday = dm === todayDDMM;
             const isPast  = day < today && !isToday;
             const cnt     = dayCounts[i];
-            const barH    = cnt === 0 ? 3 : Math.max(8, (cnt / maxDay) * COL_H);
+            const barH    = cnt === 0 ? 3 : Math.max(7, (cnt / maxDay) * COL_H);
             const bg      = isToday
               ? 'var(--color-accent)'
               : isPast ? 'rgba(37,99,235,0.22)' : 'rgba(37,99,235,0.10)';
             return (
-              <div key={i} style={{ width:28, display:'flex', alignItems:'flex-end', justifyContent:'center', height:'100%' }}>
+              <div key={i} style={{ width: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', height: '100%' }}>
                 <div style={{
-                  width:'100%', height: barH,
+                  width: '100%', height: barH,
                   background: bg,
-                  borderRadius:'3px 3px 2px 2px',
-                  transition:'height 0.28s ease, background 0.2s',
+                  borderRadius: '3px 3px 2px 2px',
+                  transition: 'height 0.28s ease, background 0.2s',
                 }} />
               </div>
             );
           })}
         </div>
 
-        {/* Day of week labels + today dot */}
-        <div style={{ display:'flex', gap:5, marginTop:4, margin:'4px auto 0', width:'fit-content' }}>
+        {/* Day of week labels */}
+        <div style={{ display: 'flex', gap: 5, marginTop: 4, margin: '4px auto 0', width: 'fit-content' }}>
           {days.map((day, i) => {
             const dm      = toDDMM(day);
             const isToday = dm === todayDDMM;
             return (
-              <div key={i} style={{ width:28, display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+              <div key={i} style={{ width: 24, display: 'flex', justifyContent: 'center' }}>
                 <span style={{
-                  fontSize: 9, fontWeight: isToday ? 700 : 400,
+                  fontSize: 9,
+                  fontWeight: isToday ? 700 : 500,
                   color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)',
-                  lineHeight:1,
+                  lineHeight: 1,
                 }}>
                   {DAY_ABR[day.getDay()]}
                 </span>
-                {isToday && (
-                  <div style={{ width:4, height:4, borderRadius:'50%', background:'var(--color-accent)' }} />
-                )}
               </div>
             );
           })}
@@ -267,24 +385,24 @@ export default function WorkProgressCard() {
       </div>
 
       {/* ── Divider ────────────────────────────────────────────── */}
-      <div style={{ height:1, background:'var(--color-border-2)', marginBottom:10 }} />
+      <div style={{ height: 1, background: 'var(--color-border-2)', marginBottom: 10 }} />
 
       {/* ── Per-project horizontal bars ────────────────────────── */}
-      <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {projStats.map(p => {
           const pct   = (p.count / maxProj) * 100;
           const empty = p.count === 0;
           return (
-            <div key={p.id} style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <div style={{ minWidth:66, display:'flex', justifyContent:'flex-end', alignItems:'center', flexShrink:0, height:14 }}>
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <div style={{ minWidth: 86, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0, height: 22 }}>
                 {p.logoUrl ? (
                   <img
                     src={p.logoUrl}
                     alt={p.name}
                     style={{
-                      height: 11,
+                      height: 18,
                       width: 'auto',
-                      maxHeight: 13,
+                      maxHeight: 20,
                       objectFit: 'contain',
                       opacity: empty ? 0.35 : 1,
                       display: 'block',
@@ -292,9 +410,11 @@ export default function WorkProgressCard() {
                   />
                 ) : (
                   <span style={{
-                    fontSize:10, fontWeight:600, textAlign:'right',
+                    fontSize: 13.5,
+                    fontWeight: 650,
+                    textAlign: 'right',
                     color: empty ? 'var(--color-text-3)' : 'var(--color-text-2)',
-                    letterSpacing:'0.01em',
+                    letterSpacing: '0.01em',
                     lineHeight: 1,
                   }}>
                     {p.name}
@@ -302,21 +422,25 @@ export default function WorkProgressCard() {
                 )}
               </div>
               <div style={{
-                flex:1, height:6, background:'var(--color-border-2)',
-                borderRadius:99, overflow:'hidden',
+                flex: 1, height: 4.5, background: 'var(--color-border-2)',
+                borderRadius: 99, overflow: 'hidden',
               }}>
                 <div style={{
-                  width:`${pct}%`, height:'100%',
+                  width: `${pct}%`, height: '100%',
                   background: p.color,
-                  borderRadius:99,
-                  opacity: empty ? 0 : 0.8,
-                  transition:'width 0.35s cubic-bezier(0.4,0,0.2,1)',
+                  borderRadius: 99,
+                  opacity: empty ? 0 : 0.85,
+                  transition: 'width 0.35s cubic-bezier(0.4,0,0.2,1)',
                 }} />
               </div>
               <span style={{
-                fontSize:10, fontWeight:700, fontVariantNumeric:'tabular-nums',
+                fontSize: 12,
+                fontWeight: 700,
+                fontVariantNumeric: 'tabular-nums',
                 color: empty ? 'var(--color-text-3)' : 'var(--color-text-2)',
-                minWidth:14, textAlign:'right', flexShrink:0,
+                minWidth: 16,
+                textAlign: 'right',
+                flexShrink: 0,
               }}>
                 {p.count}
               </span>
