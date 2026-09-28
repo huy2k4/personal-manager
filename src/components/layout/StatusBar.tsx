@@ -38,7 +38,6 @@ const TAB_TITLES: Record<NavId, { label: string; sub: string }> = {
   dashboard: { label: 'Dashboard', sub: 'Thống kê & Cảnh báo' },
   work:      { label: 'Việc',      sub: 'Công việc & Giảng dạy' },
   finance:   { label: 'Tài chính', sub: 'Dòng tiền & Đầu tư' },
-  health:    { label: 'Sức khỏe', sub: 'Gym & Dinh dưỡng' },
   study:     { label: 'Học tập',  sub: 'Ngoại ngữ & Đồ án' },
   account:   { label: 'Tài khoản', sub: 'Hồ sơ & Quản trị' },
 };

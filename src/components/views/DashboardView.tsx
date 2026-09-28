@@ -4,11 +4,11 @@ import {
   AlertTriangle,
   Clock,
   Flame,
-  Dumbbell,
   Briefcase,
   ChevronRight,
   ArrowUpRight,
   Calendar,
+  FileText,
 } from 'lucide-react';
 import type { NavId } from '@/components/layout/BottomNav';
 import { useRefresh } from '@/lib/refresh-context';
@@ -16,8 +16,6 @@ import {
   contracts,
   languages,
   cryptoAssets,
-  gymSessions,
-  nutritionToday,
   workProjects,
 } from '@/lib/mock-data';
 import WorkProgressCard from '@/components/cards/WorkProgressCard';
@@ -29,16 +27,10 @@ interface DashboardViewProps {
 
 export default function DashboardView({ onNavigate }: DashboardViewProps) {
   const { isRefreshing } = useRefresh();
-  const totalFreelanceEarned = contracts.reduce((s, c) => s + c.earned, 0);
-  const totalFreelanceGoal = contracts.reduce((s, c) => s + c.total, 0);
-
   const totalCryptoValue = cryptoAssets.reduce((s, a) => s + a.value, 0);
 
   const jaLang = languages.find((l) => l.lang === 'JA');
   const enLang = languages.find((l) => l.lang === 'EN');
-
-  const todayGymDone = gymSessions.find((s) => s.date === '2026-09-21')?.done ?? false;
-  const proteinRemaining = Math.max(0, nutritionToday.proteinGoal - nutritionToday.protein);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -66,7 +58,7 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
               />
               <span>• Betonamu •</span>
               <img
-                src="/namkhanh-logo.svg"
+                src="/NamKhanh.png"
                 alt="Nam Khánh"
                 style={{ height: 11, width: 'auto', objectFit: 'contain' }}
               />
@@ -88,15 +80,17 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
           </div>
         </div>
 
-        {/* KPI 3: Sức khỏe & Macro */}
-        <div className="kpi-card" onClick={() => onNavigate('health')} style={{ cursor: 'pointer' }}>
+        {/* KPI 3: Hợp đồng Freelance */}
+        <div className="kpi-card" onClick={() => onNavigate('finance')} style={{ cursor: 'pointer' }}>
           <div className="kpi-top">
-            <span className="kpi-title">Sức khỏe</span>
-            <Dumbbell size={14} color={todayGymDone ? 'var(--color-success)' : 'var(--color-warn)'} />
+            <span className="kpi-title">Hợp đồng</span>
+            <FileText size={14} color="var(--color-accent)" />
           </div>
           <div>
-            <div className="kpi-val">{isRefreshing ? '---' : `${nutritionToday.calories} kcal`}</div>
-            <div className="kpi-sub">{nutritionToday.protein}g / {nutritionToday.proteinGoal}g protein</div>
+            <div className="kpi-val">{isRefreshing ? '---' : `${contracts.length} Hợp đồng`}</div>
+            <div className="kpi-sub">
+              {contracts.filter((c) => c.status === 'active').length} dự án đang triển khai
+            </div>
           </div>
         </div>
 
@@ -126,7 +120,7 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
               Cảnh báo & Lịch hẹn quan trọng
             </span>
           </div>
-          <span className="badge badge-danger" style={{ fontWeight: 600 }}>4 nhắc nhở</span>
+          <span className="badge badge-danger" style={{ fontWeight: 600 }}>3 nhắc nhở</span>
         </div>
 
         <div className="alert-list">
@@ -191,28 +185,6 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
               </button>
             </div>
           </div>
-
-          {/* Cảnh báo 4: Thiếu protein & Chưa tập gym */}
-          {!todayGymDone && (
-            <div className="alert-item warn">
-              <Dumbbell size={18} color="var(--color-warn)" style={{ flexShrink: 0, marginTop: 2 }} />
-              <div className="alert-content">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span className="alert-title">Chưa tập Gym & Thiếu Protein</span>
-                  <span className="badge badge-warn" style={{ fontSize: 10 }}>Thiếu {proteinRemaining}g</span>
-                </div>
-                <p className="alert-desc">
-                  Lịch tập hôm nay: <strong>Push Day</strong> (Ngực, Tay sau, Vai). Mục tiêu protein còn thiếu {proteinRemaining}g.
-                </p>
-                <button
-                  className="alert-action-btn"
-                  onClick={() => onNavigate('health')}
-                >
-                  Mở tab Sức khỏe <ChevronRight size={12} />
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

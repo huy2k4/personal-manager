@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import { LayoutGrid, Briefcase, TrendingUp, Heart, BookOpen, User } from 'lucide-react';
+import { LayoutGrid, Briefcase, TrendingUp, BookOpen, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
 export const ALL_NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
   { id: 'work',      label: 'Việc',      icon: Briefcase },
   { id: 'finance',   label: 'Tài chính', icon: TrendingUp },
-  { id: 'health',    label: 'Sức khỏe',  icon: Heart },
   { id: 'study',     label: 'Học tập',   icon: BookOpen },
   { id: 'account',   label: 'Tài khoản', icon: User },
 ] as const;

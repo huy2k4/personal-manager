@@ -10,7 +10,6 @@ import LoginView from '@/components/views/LoginView';
 import DashboardView from '@/components/views/DashboardView';
 import WorkView from '@/components/views/WorkView';
 import FinanceView from '@/components/views/FinanceView';
-import HealthView from '@/components/views/HealthView';
 import StudyView from '@/components/views/StudyView';
 import AccountView from '@/components/views/AccountView';
 
@@ -61,7 +60,6 @@ function MainApp() {
         {activeTab === 'dashboard' && <DashboardView onNavigate={setActiveTab} />}
         {activeTab === 'work' && <WorkView />}
         {activeTab === 'finance' && (user.has_finance ? <FinanceView /> : <DashboardView onNavigate={setActiveTab} />)}
-        {activeTab === 'health' && <HealthView />}
         {activeTab === 'study' && <StudyView />}
         {activeTab === 'account' && <AccountView />}
       </PullToRefresh>
