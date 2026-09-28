@@ -64,7 +64,12 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
                 alt="Maersk"
                 style={{ height: 11, width: 'auto', objectFit: 'contain' }}
               />
-              <span>• Betonamu • Nam Khánh</span>
+              <span>• Betonamu •</span>
+              <img
+                src="/namkhanh-logo.svg"
+                alt="Nam Khánh"
+                style={{ height: 11, width: 'auto', objectFit: 'contain' }}
+              />
             </div>
           </div>
         </div>

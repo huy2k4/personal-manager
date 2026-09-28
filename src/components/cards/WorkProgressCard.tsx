@@ -93,7 +93,7 @@ export default function WorkProgressCard() {
     return registerRefreshHandler('work-progress-card', loadData);
   }, [loadData, registerRefreshHandler]);
 
-  const today     = useRef(getVNToday()).current;
+  const [today]   = useState(() => getVNToday());
   const todayDDMM = toDDMM(today);
 
   const offsetRef = useRef(0);
@@ -413,21 +413,36 @@ export default function WorkProgressCard() {
           const empty = p.count === 0 || isRefreshing;
           return (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-              <div style={{ minWidth: 86, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0, height: 22 }}>
+              <div style={{ minWidth: 96, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0, height: 22 }}>
                 {p.logoUrl ? (
-                  <img
-                    src={p.logoUrl}
-                    alt={p.name}
-                    style={{
-                      height: 18,
-                      width: 'auto',
-                      maxHeight: 20,
-                      objectFit: 'contain',
-                      opacity: empty ? 0.35 : 1,
-                      display: 'block',
-                      transition: 'opacity 0.25s ease',
-                    }}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <img
+                      src={p.logoUrl}
+                      alt={p.name}
+                      style={{
+                        height: 18,
+                        width: 'auto',
+                        maxHeight: 20,
+                        objectFit: 'contain',
+                        opacity: empty ? 0.35 : 1,
+                        display: 'block',
+                        transition: 'opacity 0.25s ease',
+                      }}
+                    />
+                    {p.id === 'nam-khanh' && (
+                      <span style={{
+                        fontSize: 12,
+                        fontWeight: 750,
+                        letterSpacing: '0.02em',
+                        textAlign: 'right',
+                        color: empty ? 'var(--color-text-3)' : 'var(--color-text-2)',
+                        lineHeight: 1,
+                        transition: 'color 0.25s ease',
+                      }}>
+                        NAMKHANH
+                      </span>
+                    )}
+                  </div>
                 ) : (
                   <span style={{
                     fontSize: 13.5,

@@ -342,17 +342,24 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
           <div className="card-header" style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {project.logoUrl ? (
-                <img
-                  src={project.logoUrl}
-                  alt={project.name}
-                  style={{
-                    height: 20,
-                    width: 'auto',
-                    maxWidth: 110,
-                    objectFit: 'contain',
-                    display: 'block',
-                  }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <img
+                    src={project.logoUrl}
+                    alt={project.name}
+                    style={{
+                      height: 24,
+                      width: 'auto',
+                      maxWidth: 110,
+                      objectFit: 'contain',
+                      display: 'block',
+                    }}
+                  />
+                  {project.id === 'nam-khanh' && (
+                    <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.02em', color: 'var(--color-text-1)' }}>
+                      NAMKHANH
+                    </span>
+                  )}
+                </div>
               ) : (
                 <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>
                   {project.name}
@@ -562,17 +569,24 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {project.logoUrl ? (
-                <img
-                  src={project.logoUrl}
-                  alt={project.name}
-                  style={{
-                    height: 20,
-                    width: 'auto',
-                    maxWidth: 110,
-                    objectFit: 'contain',
-                    display: 'block',
-                  }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <img
+                    src={project.logoUrl}
+                    alt={project.name}
+                    style={{
+                      height: 24,
+                      width: 'auto',
+                      maxWidth: 110,
+                      objectFit: 'contain',
+                      display: 'block',
+                    }}
+                  />
+                  {project.id === 'nam-khanh' && (
+                    <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.02em', color: 'var(--color-text-1)' }}>
+                      NAMKHANH
+                    </span>
+                  )}
+                </div>
               ) : (
                 <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>
                   {project.name}
