@@ -301,6 +301,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   };
 
   const doneCount = schedules.filter((s) => s.done).length;
+  const logoSrc = project.logoUrl || (project.id === 'nam-khanh' ? '/NamKhanh.png' : project.id === 'maersk' ? '/maersk-logo.png' : null);
 
   return (
     <div
@@ -341,10 +342,10 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
           {/* Header (Same on both sides) */}
           <div className="card-header" style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {project.logoUrl ? (
+              {logoSrc ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <img
-                    src={project.logoUrl}
+                    src={logoSrc}
                     alt={project.name}
                     style={{
                       height: 24,
@@ -568,10 +569,10 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {project.logoUrl ? (
+              {logoSrc ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <img
-                    src={project.logoUrl}
+                    src={logoSrc}
                     alt={project.name}
                     style={{
                       height: 24,

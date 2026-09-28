@@ -77,6 +77,11 @@ function playHapticTick() {
   }
 }
 
+const PROJ_DEFAULT_LOGOS: Record<string, string> = {
+  maersk: '/maersk-logo.png',
+  'nam-khanh': '/NamKhanh.png',
+};
+
 export default function WorkProgressCard() {
   const { isRefreshing, registerRefreshHandler } = useRefresh();
   const [projects, setProjects] = useState<WorkProject[]>(fallbackProjects);
@@ -113,7 +118,9 @@ export default function WorkProgressCard() {
   const windowSet = new Set(days.map(toDDMM));
 
   const projStats = projects.map(p => ({
-    id: p.id, name: p.name, logoUrl: p.logoUrl,
+    id: p.id,
+    name: p.id === 'nam-khanh' ? 'NAMKHANH' : p.name,
+    logoUrl: p.logoUrl || PROJ_DEFAULT_LOGOS[p.id],
     color: PROJ_COLORS[p.id] ?? '#6B6B6B',
     count: (p.schedules || []).filter(s => windowSet.has(s.date)).length,
   }));
