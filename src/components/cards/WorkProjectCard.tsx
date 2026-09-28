@@ -10,6 +10,7 @@ import {
   Clock,
   Trash2,
   AlertCircle,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { WorkProject, ProjectSchedule, ProjectGuide, ProjectGlossary } from '@/types';
 import { supabase } from '@/lib/supabase/client';
@@ -53,8 +54,21 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   const [termName, setTermName] = useState('');
   const [termDef, setTermDef] = useState('');
 
-  // Mobile double-tap detection
-  const lastTapRef = useRef<number>(0);
+  // Mobile double-tap detection with touch distance & duration tolerance
+  const touchStartRef = useRef<{ time: number; x: number; y: number } | null>(null);
+  const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      touchStartRef.current = {
+        time: Date.now(),
+        x: touch.clientX,
+        y: touch.clientY,
+      };
+    }
+  };
+
   const handleTouchEnd = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
     if (
@@ -68,12 +82,40 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
       return;
     }
 
-    const t = Date.now();
-    if (t - lastTapRef.current < 350) {
-      setIsFlipped((prev) => !prev);
-      lastTapRef.current = 0;
-    } else {
-      lastTapRef.current = t;
+    if (!touchStartRef.current) return;
+    const start = touchStartRef.current;
+    const endTouch = e.changedTouches[0];
+    if (!endTouch) return;
+
+    const moveDist = Math.hypot(endTouch.clientX - start.x, endTouch.clientY - start.y);
+    const duration = Date.now() - start.time;
+
+    // Filter out scroll/swipe gestures: must move < 18px and be released within 400ms
+    if (moveDist < 18 && duration < 400) {
+      const now = Date.now();
+      const lastTap = lastTapRef.current;
+
+      if (lastTap) {
+        const timeDiff = now - lastTap.time;
+        const tapDist = Math.hypot(endTouch.clientX - lastTap.x, endTouch.clientY - lastTap.y);
+
+        // Valid double tap window: 50ms to 500ms and within 40px
+        if (timeDiff >= 50 && timeDiff <= 500 && tapDist < 40) {
+          setIsFlipped((prev) => !prev);
+          lastTapRef.current = null;
+          touchStartRef.current = null;
+          if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+            navigator.vibrate(12);
+          }
+          return;
+        }
+      }
+
+      lastTapRef.current = {
+        time: now,
+        x: endTouch.clientX,
+        y: endTouch.clientY,
+      };
     }
   };
 
@@ -309,8 +351,10 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
         perspective: 1200,
         width: '100%',
         userSelect: 'none',
+        touchAction: 'manipulation',
       }}
       onDoubleClick={handleDoubleClick}
+      onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       <div
@@ -372,6 +416,31 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
               <span className="text-xs text-3">
                 {doneCount}/{schedules.length} xong
               </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFlipped(true);
+                }}
+                title="Lật thẻ để thêm / chỉnh sửa"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '3px 8px',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'var(--color-surface-2)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-2)',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease, color 0.15s ease',
+                }}
+              >
+                <SlidersHorizontal size={11} />
+                <span>Quản lý</span>
+              </button>
             </div>
           </div>
 
