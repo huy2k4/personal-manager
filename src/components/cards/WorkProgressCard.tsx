@@ -89,8 +89,17 @@ export default function WorkProgressCard() {
   }, []);
 
   useEffect(() => {
-    loadData();
-    return registerRefreshHandler('work-progress-card', loadData);
+    let isMounted = true;
+    fetchWorkProjects().then((data) => {
+      if (isMounted && data && data.length > 0) {
+        setProjects(data as WorkProject[]);
+      }
+    });
+    const unregister = registerRefreshHandler('work-progress-card', loadData);
+    return () => {
+      isMounted = false;
+      unregister();
+    };
   }, [loadData, registerRefreshHandler]);
 
   const [today]   = useState(() => getVNToday());
@@ -129,7 +138,7 @@ export default function WorkProgressCard() {
     const totalSteps = Math.abs(targetOffset - cur);
     if (totalSteps === 0) return;
 
-    const step = (remaining: number) => {
+    const step = () => {
       const current = offsetRef.current;
       if (current === targetOffset) return;
       
@@ -142,11 +151,11 @@ export default function WorkProgressCard() {
         // Natural ease-out deceleration curve: fast at start (~22ms), slow at end (~135ms)
         const progress = (totalSteps - left) / totalSteps;
         const delay = Math.round(22 + Math.pow(progress, 1.7) * 115);
-        tmr.current = setTimeout(() => step(left), delay);
+        tmr.current = setTimeout(() => step(), delay);
       }
     };
 
-    step(totalSteps);
+    step();
   }, [setOffset]);
 
   // Touch gesture with strict direction locking & preventDefault on horizontal swipe
@@ -217,7 +226,7 @@ export default function WorkProgressCard() {
       // If locked vertical (s.isH === false): do nothing, browser scrolls smoothly
     };
 
-    const onTouchEnd = (e: TouchEvent) => {
+    const onTouchEnd = () => {
       const s = touchState.current;
       if (!s.active) return;
       s.active = false;
@@ -311,7 +320,7 @@ export default function WorkProgressCard() {
     }
   };
 
-  const onMouseUp = (e: React.MouseEvent) => {
+  const onMouseUp = () => {
     const s = mouseState.current;
     if (!s.active) return;
     s.active = false;
