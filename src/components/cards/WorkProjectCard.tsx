@@ -11,6 +11,9 @@ import {
   Trash2,
   AlertCircle,
   SlidersHorizontal,
+  Pencil,
+  Check,
+  X,
 } from 'lucide-react';
 import type { WorkProject, ProjectSchedule, ProjectGuide, ProjectGlossary } from '@/types';
 import { supabase } from '@/lib/supabase/client';
@@ -53,6 +56,12 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
   const [termName, setTermName] = useState('');
   const [termDef, setTermDef] = useState('');
+
+  // Inline edit state for glossary
+  const [editingTermId, setEditingTermId] = useState<string | null>(null);
+  const [editTermName, setEditTermName] = useState('');
+  const [editTermDef, setEditTermDef] = useState('');
+  const [glossaryError, setGlossaryError] = useState<string | null>(null);
 
   // Mobile double-tap detection with touch distance & duration tolerance
   const touchStartRef = useRef<{ time: number; x: number; y: number } | null>(null);
@@ -303,30 +312,51 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     }
   };
 
-  // Add Term
+  // Add Term — lấy UUID thực từ Supabase sau khi insert
   const handleAddTerm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termName.trim() || !termDef.trim()) return;
+    setGlossaryError(null);
 
-    const newTerm: ProjectGlossary = {
-      id: `gl-${Date.now()}`,
+    const optimisticId = `gl-temp-${Date.now()}`;
+    const optimisticTerm: ProjectGlossary = {
+      id: optimisticId,
       term: termName.trim(),
       definition: termDef.trim(),
     };
 
-    setGlossary((prev) => [...prev, newTerm]);
+    setGlossary((prev) => [...prev, optimisticTerm]);
     setTermName('');
     setTermDef('');
 
     try {
-      await supabase.from('project_glossary').insert({
-        project_id: project.id,
-        term: newTerm.term,
-        definition: newTerm.definition,
-      });
+      const { data, error } = await supabase
+        .from('project_glossary')
+        .insert({
+          project_id: project.id,
+          term: optimisticTerm.term,
+          definition: optimisticTerm.definition,
+        })
+        .select()
+        .single();
+
+      if (error || !data) {
+        // Rollback optimistic update
+        setGlossary((prev) => prev.filter((g) => g.id !== optimisticId));
+        setGlossaryError('Lưu thất bại: ' + (error?.message || 'Lỗi không xác định'));
+        return;
+      }
+
+      // Replace temp ID with real UUID from Supabase
+      setGlossary((prev) =>
+        prev.map((g) =>
+          g.id === optimisticId ? { id: data.id, term: data.term, definition: data.definition } : g
+        )
+      );
       if (onUpdate) onUpdate();
     } catch {
-      // Ignore
+      setGlossary((prev) => prev.filter((g) => g.id !== optimisticId));
+      setGlossaryError('Lỗi kết nối Supabase.');
     }
   };
 
@@ -335,11 +365,60 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     e.stopPropagation();
     setGlossary((prev) => prev.filter((g) => g.id !== id));
     try {
-      await supabase.from('project_glossary').delete().eq('id', id);
-      if (onUpdate) onUpdate();
+      const { error } = await supabase.from('project_glossary').delete().eq('id', id);
+      if (error) setGlossaryError('Xóa thất bại: ' + error.message);
+      else if (onUpdate) onUpdate();
     } catch {
-      // Ignore
+      setGlossaryError('Lỗi kết nối khi xóa.');
     }
+  };
+
+  // Start editing a term inline
+  const handleStartEditTerm = (term: ProjectGlossary, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTermId(term.id);
+    setEditTermName(term.term);
+    setEditTermDef(term.definition);
+    setGlossaryError(null);
+  };
+
+  // Save edited term
+  const handleSaveTerm = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!editTermName.trim() || !editTermDef.trim()) return;
+    setGlossaryError(null);
+
+    const prev = glossary.find((g) => g.id === id);
+    // Optimistic update
+    setGlossary((list) =>
+      list.map((g) =>
+        g.id === id ? { ...g, term: editTermName.trim(), definition: editTermDef.trim() } : g
+      )
+    );
+    setEditingTermId(null);
+
+    try {
+      const { error } = await supabase
+        .from('project_glossary')
+        .update({ term: editTermName.trim(), definition: editTermDef.trim() })
+        .eq('id', id);
+
+      if (error) {
+        // Rollback
+        if (prev) setGlossary((list) => list.map((g) => (g.id === id ? prev : g)));
+        setGlossaryError('Cập nhật thất bại: ' + error.message);
+      } else if (onUpdate) onUpdate();
+    } catch {
+      if (prev) setGlossary((list) => list.map((g) => (g.id === id ? prev : g)));
+      setGlossaryError('Lỗi kết nối khi cập nhật.');
+    }
+  };
+
+  // Cancel editing
+  const handleCancelEditTerm = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTermId(null);
+    setGlossaryError(null);
   };
 
   const doneCount = schedules.filter((s) => s.done).length;
@@ -579,22 +658,23 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                 glossary.map((term) => (
                   <div
                     key={term.id}
-                    onClick={() => setOpenTermId(openTermId === term.id ? null : term.id)}
                     style={{
-                      padding: '9px 11px',
                       borderRadius: 'var(--radius-sm)',
                       background: 'var(--color-surface-2)',
                       border: '1px solid var(--color-border-2)',
-                      cursor: 'pointer',
+                      overflow: 'hidden',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-accent)' }}>
+                    <div
+                      onClick={() => setOpenTermId(openTermId === term.id ? null : term.id)}
+                      style={{ padding: '9px 11px', cursor: 'pointer' }}
+                    >
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-accent)' }}>
                         {term.term}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 11.5, color: 'var(--color-text-2)', marginTop: 3, lineHeight: 1.4 }}>
-                      {term.definition}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--color-text-2)', marginTop: 3, lineHeight: 1.4 }}>
+                        {term.definition}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -1280,41 +1360,139 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                 </button>
               </form>
 
+              {/* Error message */}
+              {glossaryError && (
+                <div style={{ fontSize: 11, color: 'var(--color-danger)', padding: '4px 8px', borderRadius: 'var(--radius-sm)', background: 'rgba(239,68,68,0.08)' }}>
+                  {glossaryError}
+                </div>
+              )}
+
               {/* List of current terms */}
               {glossary.length > 0 && (
                 <div style={{ marginTop: 4 }}>
                   <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
                     Thuật ngữ hiện có ({glossary.length})
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 110, overflowY: 'auto' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 160, overflowY: 'auto' }}>
                     {glossary.map((t) => (
                       <div
                         key={t.id}
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '5px 8px',
                           borderRadius: 'var(--radius-sm)',
                           background: 'var(--color-surface-2)',
+                          border: editingTermId === t.id ? '1px solid var(--color-accent)' : '1px solid transparent',
                           fontSize: 11.5,
+                          overflow: 'hidden',
                         }}
                       >
-                        <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {t.term}
-                        </span>
-                        <button
-                          onClick={(e) => handleDeleteTerm(t.id, e)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: 'var(--color-danger)',
-                            padding: 2,
-                          }}
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        {editingTermId === t.id ? (
+                          /* ── Inline edit form ── */
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, padding: '7px 8px' }}>
+                            <input
+                              autoFocus
+                              type="text"
+                              value={editTermName}
+                              onChange={(ev) => setEditTermName(ev.target.value)}
+                              onClick={(ev) => ev.stopPropagation()}
+                              style={{
+                                padding: '5px 8px',
+                                borderRadius: 'var(--radius-sm)',
+                                border: '1px solid var(--color-border)',
+                                background: 'var(--color-surface)',
+                                fontSize: 12,
+                                color: 'var(--color-text-1)',
+                                fontWeight: 700,
+                              }}
+                            />
+                            <input
+                              type="text"
+                              value={editTermDef}
+                              onChange={(ev) => setEditTermDef(ev.target.value)}
+                              onClick={(ev) => ev.stopPropagation()}
+                              style={{
+                                padding: '5px 8px',
+                                borderRadius: 'var(--radius-sm)',
+                                border: '1px solid var(--color-border)',
+                                background: 'var(--color-surface)',
+                                fontSize: 11.5,
+                                color: 'var(--color-text-1)',
+                              }}
+                            />
+                            <div style={{ display: 'flex', gap: 5 }}>
+                              <button
+                                onClick={(ev) => handleSaveTerm(t.id, ev)}
+                                style={{
+                                  flex: 1,
+                                  padding: '5px',
+                                  borderRadius: 'var(--radius-sm)',
+                                  background: 'var(--color-accent)',
+                                  color: '#fff',
+                                  border: 'none',
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: 4,
+                                }}
+                              >
+                                <Check size={11} /> Lưu
+                              </button>
+                              <button
+                                onClick={handleCancelEditTerm}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: 'var(--radius-sm)',
+                                  background: 'var(--color-surface-3, var(--color-surface-2))',
+                                  color: 'var(--color-text-2)',
+                                  border: '1px solid var(--color-border)',
+                                  fontSize: 11,
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <X size={11} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* ── Normal row ── */
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 8px' }}>
+                            <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <strong>{t.term}</strong>
+                              <span style={{ color: 'var(--color-text-3)', marginLeft: 4 }}>— {t.definition.length > 30 ? t.definition.slice(0, 30) + '…' : t.definition}</span>
+                            </span>
+                            <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+                              <button
+                                onClick={(ev) => handleStartEditTerm(t, ev)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  color: 'var(--color-accent)',
+                                  padding: 3,
+                                }}
+                              >
+                                <Pencil size={12} />
+                              </button>
+                              <button
+                                onClick={(ev) => handleDeleteTerm(t.id, ev)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  color: 'var(--color-danger)',
+                                  padding: 3,
+                                }}
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
