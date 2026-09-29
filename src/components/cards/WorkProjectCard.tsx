@@ -703,7 +703,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
             transform: 'rotateY(180deg)',
             display: 'flex',
             flexDirection: 'column',
-            minHeight: 360,
+            minHeight: 0,
             background: 'var(--color-surface)',
             border: '2px solid var(--color-accent)',
             boxShadow: '0 8px 30px rgba(37, 99, 235, 0.15)',
@@ -1315,90 +1315,14 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
           {/* Back Tab 3: Add/Manage Glossary */}
           {editTab === 'glossary' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <form onSubmit={handleAddTerm} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <input
-                  ref={termNameRef}
-                  autoFocus
-                  type="text"
-                  placeholder="Thuật ngữ (VD: EDI, Reefer)..."
-                  value={termName}
-                  onChange={(e) => setTermName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      termDefRef.current?.focus();
-                    }
-                  }}
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-surface-2)',
-                    fontSize: 12,
-                    color: 'var(--color-text-1)',
-                    outline: 'none',
-                  }}
-                />
-                <input
-                  ref={termDefRef}
-                  type="text"
-                  placeholder="Định nghĩa thuật ngữ..."
-                  value={termDef}
-                  onChange={(e) => setTermDef(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (termName.trim() && termDef.trim()) {
-                        // Submit then focus back to title
-                        handleAddTerm();
-                      }
-                    }
-                  }}
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-surface-2)',
-                    fontSize: 12,
-                    color: 'var(--color-text-1)',
-                    outline: 'none',
-                  }}
-                />
-                <button
-                  type="submit"
-                  style={{
-                    padding: '8px',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'var(--color-accent)',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <span>Thêm Thuật ngữ</span>
-                </button>
-              </form>
 
-              {/* Error message */}
-              {glossaryError && (
-                <div style={{ fontSize: 11, color: 'var(--color-danger)', padding: '4px 8px', borderRadius: 'var(--radius-sm)', background: 'rgba(239,68,68,0.08)' }}>
-                  {glossaryError}
-                </div>
-              )}
-
-              {/* List of current terms */}
+              {/* ── Danh sách hiện có — luôn hiện đầu tiên ── */}
               {glossary.length > 0 && (
-                <div style={{ marginTop: 2 }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
+                <div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
                     Thuật ngữ hiện có ({glossary.length})
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, overflowY: 'auto', maxHeight: 150 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {glossary.map((t) => (
                       <div
                         key={t.id}
@@ -1497,25 +1421,13 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                             <div style={{ display: 'flex', gap: 1, flexShrink: 0 }}>
                               <button
                                 onClick={(ev) => handleStartEditTerm(t, ev)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  color: 'var(--color-accent)',
-                                  padding: 3,
-                                }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent)', padding: 3 }}
                               >
                                 <Pencil size={12} />
                               </button>
                               <button
                                 onClick={(ev) => handleDeleteTerm(t.id, ev)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  color: 'var(--color-danger)',
-                                  padding: 3,
-                                }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', padding: 3 }}
                               >
                                 <Trash2 size={12} />
                               </button>
@@ -1525,6 +1437,92 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* ── Divider ── */}
+              {glossary.length > 0 && (
+                <div style={{ borderTop: '1px dashed var(--color-border)', paddingTop: 8 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
+                    Thêm thuật ngữ mới
+                  </div>
+                </div>
+              )}
+
+              {/* ── Form thêm mới ── */}
+              <form onSubmit={handleAddTerm} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <input
+                  ref={termNameRef}
+                  autoFocus
+                  type="text"
+                  placeholder="Thuật ngữ (VD: EDI, Reefer)..."
+                  value={termName}
+                  onChange={(e) => setTermName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      termDefRef.current?.focus();
+                    }
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-surface-2)',
+                    fontSize: 12,
+                    color: 'var(--color-text-1)',
+                    outline: 'none',
+                  }}
+                />
+                <input
+                  ref={termDefRef}
+                  type="text"
+                  placeholder="Định nghĩa thuật ngữ..."
+                  value={termDef}
+                  onChange={(e) => setTermDef(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (termName.trim() && termDef.trim()) {
+                        handleAddTerm();
+                      }
+                    }
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-surface-2)',
+                    fontSize: 12,
+                    color: 'var(--color-text-1)',
+                    outline: 'none',
+                  }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    padding: '8px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--color-accent)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>Thêm Thuật ngữ</span>
+                </button>
+              </form>
+
+              {/* Error message */}
+              {glossaryError && (
+                <div style={{ fontSize: 11, color: 'var(--color-danger)', padding: '4px 8px', borderRadius: 'var(--radius-sm)', background: 'rgba(239,68,68,0.08)' }}>
+                  {glossaryError}
                 </div>
               )}
             </div>
