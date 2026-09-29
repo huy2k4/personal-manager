@@ -26,7 +26,11 @@ export default function WorkView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       {projects.map((project) => (
-        <WorkProjectCard key={project.id} project={project} onUpdate={loadData} />
+        <WorkProjectCard
+          key={`${project.id}-g${(project.glossary || []).length}`}
+          project={project}
+          onUpdate={loadData}
+        />
       ))}
     </div>
   );

@@ -357,7 +357,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
           g.id === optimisticId ? { id: data.id, term: data.term, definition: data.definition } : g
         )
       );
-      if (onUpdate) onUpdate();
+      // Không gọi onUpdate để tránh race condition - state đã được sync qua useEffect
     } catch {
       setGlossary((prev) => prev.filter((g) => g.id !== optimisticId));
       setGlossaryError('Lỗi kết nối Supabase.');
@@ -371,7 +371,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     try {
       const { error } = await supabase.from('project_glossary').delete().eq('id', id);
       if (error) setGlossaryError('Xóa thất bại: ' + error.message);
-      else if (onUpdate) onUpdate();
+      // Không gọi onUpdate để tránh race condition
     } catch {
       setGlossaryError('Lỗi kết nối khi xóa.');
     }
@@ -411,7 +411,8 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
         // Rollback
         if (prev) setGlossary((list) => list.map((g) => (g.id === id ? prev : g)));
         setGlossaryError('Cập nhật thất bại: ' + error.message);
-      } else if (onUpdate) onUpdate();
+      }
+      // Không gọi onUpdate để tránh race condition
     } catch {
       if (prev) setGlossary((list) => list.map((g) => (g.id === id ? prev : g)));
       setGlossaryError('Lỗi kết nối khi cập nhật.');
