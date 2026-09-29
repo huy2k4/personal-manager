@@ -56,6 +56,8 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
   const [termName, setTermName] = useState('');
   const [termDef, setTermDef] = useState('');
+  const termNameRef = useRef<HTMLInputElement>(null);
+  const termDefRef = useRef<HTMLInputElement>(null);
 
   // Inline edit state for glossary
   const [editingTermId, setEditingTermId] = useState<string | null>(null);
@@ -313,8 +315,8 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   };
 
   // Add Term — lấy UUID thực từ Supabase sau khi insert
-  const handleAddTerm = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddTerm = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!termName.trim() || !termDef.trim()) return;
     setGlossaryError(null);
 
@@ -328,6 +330,8 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     setGlossary((prev) => [...prev, optimisticTerm]);
     setTermName('');
     setTermDef('');
+    // Focus back to title input
+    setTimeout(() => termNameRef.current?.focus(), 0);
 
     try {
       const { data, error } = await supabase
@@ -1312,10 +1316,18 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <form onSubmit={handleAddTerm} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <input
+                  ref={termNameRef}
+                  autoFocus
                   type="text"
                   placeholder="Thuật ngữ (VD: EDI, Reefer)..."
                   value={termName}
                   onChange={(e) => setTermName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      termDefRef.current?.focus();
+                    }
+                  }}
                   style={{
                     padding: '8px 10px',
                     borderRadius: 'var(--radius-sm)',
@@ -1323,13 +1335,24 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     background: 'var(--color-surface-2)',
                     fontSize: 12,
                     color: 'var(--color-text-1)',
+                    outline: 'none',
                   }}
                 />
                 <input
+                  ref={termDefRef}
                   type="text"
                   placeholder="Định nghĩa thuật ngữ..."
                   value={termDef}
                   onChange={(e) => setTermDef(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (termName.trim() && termDef.trim()) {
+                        // Submit then focus back to title
+                        handleAddTerm();
+                      }
+                    }
+                  }}
                   style={{
                     padding: '8px 10px',
                     borderRadius: 'var(--radius-sm)',
@@ -1337,6 +1360,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     background: 'var(--color-surface-2)',
                     fontSize: 12,
                     color: 'var(--color-text-1)',
+                    outline: 'none',
                   }}
                 />
                 <button
@@ -1369,11 +1393,11 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
               {/* List of current terms */}
               {glossary.length > 0 && (
-                <div style={{ marginTop: 4 }}>
+                <div style={{ marginTop: 2 }}>
                   <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 4 }}>
                     Thuật ngữ hiện có ({glossary.length})
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 160, overflowY: 'auto' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5, overflowY: 'auto', maxHeight: 150 }}>
                     {glossary.map((t) => (
                       <div
                         key={t.id}
@@ -1402,6 +1426,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                                 fontSize: 12,
                                 color: 'var(--color-text-1)',
                                 fontWeight: 700,
+                                outline: 'none',
                               }}
                             />
                             <input
@@ -1416,6 +1441,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                                 background: 'var(--color-surface)',
                                 fontSize: 11.5,
                                 color: 'var(--color-text-1)',
+                                outline: 'none',
                               }}
                             />
                             <div style={{ display: 'flex', gap: 5 }}>
@@ -1460,12 +1486,14 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                           </div>
                         ) : (
                           /* ── Normal row ── */
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 8px' }}>
-                            <span style={{ color: 'var(--color-text-1)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              <strong>{t.term}</strong>
-                              <span style={{ color: 'var(--color-text-3)', marginLeft: 4 }}>— {t.definition.length > 30 ? t.definition.slice(0, 30) + '…' : t.definition}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 8px', minWidth: 0 }}>
+                            <span style={{ color: 'var(--color-text-1)', flex: 1, overflow: 'hidden', minWidth: 0 }}>
+                              <span style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{t.term}</span>
+                              <span style={{ color: 'var(--color-text-3)', marginLeft: 4, fontSize: 10.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: '60%', verticalAlign: 'middle' }}>
+                                {t.definition}
+                              </span>
                             </span>
-                            <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+                            <div style={{ display: 'flex', gap: 1, flexShrink: 0 }}>
                               <button
                                 onClick={(ev) => handleStartEditTerm(t, ev)}
                                 style={{
