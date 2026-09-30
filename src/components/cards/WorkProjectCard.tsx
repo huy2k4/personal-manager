@@ -111,7 +111,15 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
         // Valid double tap window: 50ms to 500ms and within 40px
         if (timeDiff >= 50 && timeDiff <= 500 && tapDist < 40) {
-          setIsFlipped((prev) => !prev);
+          setIsFlipped((prev) => {
+            const next = !prev;
+            if (next) {
+              setEditTab(activeTab);
+            } else {
+              setActiveTab(editTab);
+            }
+            return next;
+          });
           lastTapRef.current = null;
           touchStartRef.current = null;
           if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -141,7 +149,15 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     ) {
       return;
     }
-    setIsFlipped((prev) => !prev);
+    setIsFlipped((prev) => {
+      const next = !prev;
+      if (next) {
+        setEditTab(activeTab);
+      } else {
+        setActiveTab(editTab);
+      }
+      return next;
+    });
   };
 
   // Toggle Done in Supabase
@@ -719,6 +735,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                setActiveTab(editTab);
                 setIsFlipped(false);
               }}
               style={{
