@@ -561,6 +561,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     key={item.id}
                     onClick={() => toggleSchedule(item.id)}
                     style={{
+                      flexShrink: 0,
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: 10,
@@ -634,6 +635,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                     key={g.id}
                     onClick={() => setOpenGuideId(openGuideId === g.id ? null : g.id)}
                     style={{
+                      flexShrink: 0,
                       padding: '9px 11px',
                       borderRadius: 'var(--radius-sm)',
                       background: 'var(--color-surface-2)',
@@ -677,6 +679,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                   <div
                     key={term.id}
                     style={{
+                      flexShrink: 0,
                       borderRadius: 'var(--radius-sm)',
                       background: 'var(--color-surface-2)',
                       border: '1px solid var(--color-border-2)',
@@ -1197,10 +1200,11 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                       <div
                         key={s.id}
                         style={{
+                          flexShrink: 0,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          padding: '5px 8px',
+                          padding: '6px 8px',
                           borderRadius: 'var(--radius-sm)',
                           background: 'var(--color-surface-2)',
                           fontSize: 11.5,
@@ -1294,10 +1298,11 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                       <div
                         key={g.id}
                         style={{
+                          flexShrink: 0,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          padding: '5px 8px',
+                          padding: '6px 8px',
                           borderRadius: 'var(--radius-sm)',
                           background: 'var(--color-surface-2)',
                           fontSize: 11.5,
@@ -1351,6 +1356,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                       <div
                         key={t.id}
                         style={{
+                          flexShrink: 0,
                           borderRadius: 'var(--radius-sm)',
                           background: 'var(--color-surface-2)',
                           border: editingTermId === t.id ? '1px solid var(--color-accent)' : '1px solid transparent',
@@ -1435,25 +1441,29 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                           </div>
                         ) : (
                           /* ── Normal row ── */
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 8px', minWidth: 0 }}>
-                            <span style={{ color: 'var(--color-text-1)', flex: 1, overflow: 'hidden', minWidth: 0 }}>
-                              <span style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{t.term}</span>
-                              <span style={{ color: 'var(--color-text-3)', marginLeft: 4, fontSize: 10.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: '60%', verticalAlign: 'middle' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 9px', minWidth: 0 }}>
+                            <span style={{ color: 'var(--color-text-1)', flex: 1, overflow: 'hidden', minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                              <span style={{ fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0, fontSize: 12 }}>{t.term}</span>
+                              <span style={{ color: 'var(--color-text-3)', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {t.definition}
                               </span>
                             </span>
-                            <div style={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                            <div style={{ display: 'flex', gap: 2, flexShrink: 0, alignItems: 'center' }}>
                               <button
+                                type="button"
                                 onClick={(ev) => handleStartEditTerm(t, ev)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent)', padding: 3 }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent)', padding: 3, display: 'flex', alignItems: 'center' }}
+                                title="Sửa"
                               >
-                                <Pencil size={12} />
+                                <Pencil size={13} />
                               </button>
                               <button
+                                type="button"
                                 onClick={(ev) => handleDeleteTerm(t.id, ev)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', padding: 3 }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)', padding: 3, display: 'flex', alignItems: 'center' }}
+                                title="Xóa"
                               >
-                                <Trash2 size={12} />
+                                <Trash2 size={13} />
                               </button>
                             </div>
                           </div>
