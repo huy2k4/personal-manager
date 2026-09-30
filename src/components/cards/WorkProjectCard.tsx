@@ -425,7 +425,6 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     setGlossaryError(null);
   };
 
-  const doneCount = schedules.filter((s) => s.done).length;
   const logoSrc = project.logoUrl || (project.id === 'nam-khanh' ? '/NamKhanh.png' : project.id === 'maersk' ? '/maersk-logo.png' : null);
 
   return (
@@ -493,12 +492,6 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                   {project.name}
                 </span>
               )}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="text-xs text-3">
-                {doneCount}/{schedules.length} xong
-              </span>
             </div>
           </div>
 
