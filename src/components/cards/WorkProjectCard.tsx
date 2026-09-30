@@ -540,7 +540,17 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
           {/* Tab 1: Schedules */}
           {activeTab === 'schedule' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 7,
+                maxHeight: 220,
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                paddingRight: 2,
+              }}
+            >
               {schedules.length === 0 ? (
                 <div style={{ padding: '16px 0', textAlign: 'center', fontSize: 12, color: 'var(--color-text-3)' }}>
                   Chưa có lịch trình. Nhấn đúp vào card để thêm việc mới!
@@ -603,7 +613,17 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
           {/* Tab 2: Guides */}
           {activeTab === 'guides' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 7,
+                maxHeight: 220,
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                paddingRight: 2,
+              }}
+            >
               {guides.length === 0 ? (
                 <div style={{ padding: '16px 0', textAlign: 'center', fontSize: 12, color: 'var(--color-text-3)' }}>
                   Chưa có tài liệu hướng dẫn. Nhấn đúp vào card để thêm!
@@ -637,7 +657,17 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
 
           {/* Tab 3: Glossary */}
           {activeTab === 'glossary' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 7,
+                maxHeight: 220,
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                paddingRight: 2,
+              }}
+            >
               {glossary.length === 0 ? (
                 <div style={{ padding: '16px 0', textAlign: 'center', fontSize: 12, color: 'var(--color-text-3)' }}>
                   Chưa có thuật ngữ. Nhấn đúp vào card để thêm!
@@ -1306,7 +1336,17 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
                   <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
                     Thuật ngữ hiện có ({glossary.length})
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 5,
+                      maxHeight: 180,
+                      overflowY: 'auto',
+                      WebkitOverflowScrolling: 'touch',
+                      paddingRight: 2,
+                    }}
+                  >
                     {glossary.map((t) => (
                       <div
                         key={t.id}
