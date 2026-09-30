@@ -67,6 +67,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   // Mobile double-tap detection with touch distance & duration tolerance
   const touchStartRef = useRef<{ time: number; x: number; y: number } | null>(null);
   const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(null);
+  const lastTouchFlipTimeRef = useRef<number>(0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
@@ -100,8 +101,8 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     const moveDist = Math.hypot(endTouch.clientX - start.x, endTouch.clientY - start.y);
     const duration = Date.now() - start.time;
 
-    // Filter out scroll/swipe gestures: must move < 18px and be released within 400ms
-    if (moveDist < 18 && duration < 400) {
+    // Filter out scroll/swipe gestures: must move < 28px and be released within 450ms
+    if (moveDist < 28 && duration < 450) {
       const now = Date.now();
       const lastTap = lastTapRef.current;
 
@@ -109,8 +110,9 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
         const timeDiff = now - lastTap.time;
         const tapDist = Math.hypot(endTouch.clientX - lastTap.x, endTouch.clientY - lastTap.y);
 
-        // Valid double tap window: 50ms to 500ms and within 40px
-        if (timeDiff >= 50 && timeDiff <= 500 && tapDist < 40) {
+        // Valid double tap window: 40ms to 650ms and within 60px
+        if (timeDiff >= 40 && timeDiff <= 650 && tapDist < 60) {
+          lastTouchFlipTimeRef.current = Date.now();
           setIsFlipped((prev) => {
             const next = !prev;
             if (next) {
@@ -138,6 +140,11 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
+    // Prevent synthetic dblclick from flipping back right after a touch double-tap
+    if (Date.now() - lastTouchFlipTimeRef.current < 800) {
+      return;
+    }
+
     const target = e.target as HTMLElement;
     if (
       target.tagName === 'INPUT' ||
