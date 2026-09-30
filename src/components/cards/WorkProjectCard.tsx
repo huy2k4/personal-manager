@@ -10,7 +10,6 @@ import {
   Clock,
   Trash2,
   AlertCircle,
-  SlidersHorizontal,
   Pencil,
   Check,
   X,
@@ -500,31 +499,6 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
               <span className="text-xs text-3">
                 {doneCount}/{schedules.length} xong
               </span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsFlipped(true);
-                }}
-                title="Lật thẻ để thêm / chỉnh sửa"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '3px 8px',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'var(--color-surface-2)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text-2)',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s ease, color 0.15s ease',
-                }}
-              >
-                <SlidersHorizontal size={11} />
-                <span>Quản lý</span>
-              </button>
             </div>
           </div>
 
