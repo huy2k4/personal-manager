@@ -65,8 +65,9 @@ function tzParts(date: Date, zone: string) {
 }
 
 /**
- * Returns the next open Date (UTC) for a session.
- * If currently open, returns the close time instead (for "OPEN" state).
+ * Returns whether the session is open, and the remaining minutes:
+ * - If open: minutes remaining until session closes (counts down to close)
+ * - If closed: minutes remaining until next session opens (counts down to open)
  */
 function nextSessionOpen(now: Date, zone: string, openH: number, openM: number, closeH: number, closeM: number) {
   const { weekday, h, m } = tzParts(now, zone);
@@ -75,9 +76,10 @@ function nextSessionOpen(now: Date, zone: string, openH: number, openM: number, 
   const openMins  = openH * 60 + openM;
   const closeMins = closeH * 60 + closeM;
 
-  // Currently open?
+  // Currently open? -> Count down until close
   if (!isWeekend && curMins >= openMins && curMins < closeMins) {
-    return { open: true, minsUntilOpen: 0 };
+    const minsUntilClose = closeMins - curMins;
+    return { open: true, minsRemaining: minsUntilClose };
   }
 
   // Minutes until next open
@@ -91,7 +93,7 @@ function nextSessionOpen(now: Date, zone: string, openH: number, openM: number, 
   }
 
   const minsUntilOpen = daysAhead * 24 * 60 - curMins + openMins;
-  return { open: false, minsUntilOpen };
+  return { open: false, minsRemaining: minsUntilOpen };
 }
 
 
@@ -184,7 +186,7 @@ export default function StatusBar({ activeTab = 'dashboard' }: StatusBarProps) {
         borderTop: '1px solid var(--color-border-2)',
       }}>
         {SESSIONS.map(({ label, Flag, title, zone, openH, openM, closeH, closeM }) => {
-          const { open, minsUntilOpen } = nextSessionOpen(now, zone, openH, openM, closeH, closeM);
+          const { open, minsRemaining } = nextSessionOpen(now, zone, openH, openM, closeH, closeM);
           return (
             <div
               key={label}
@@ -197,7 +199,9 @@ export default function StatusBar({ activeTab = 'dashboard' }: StatusBarProps) {
                 padding: '5px 4px',
                 borderRadius: 'var(--radius-sm)',
                 background: open ? 'var(--color-accent-bg)' : 'var(--color-surface-2)',
-                border: `1px solid ${open ? 'var(--color-accent-ring)' : 'var(--color-border-2)'}`,
+                border: open ? '1.5px solid var(--color-accent)' : '1px solid var(--color-border-2)',
+                boxShadow: open ? '0 0 8px rgba(37, 99, 235, 0.18)' : 'none',
+                transition: 'all 0.2s ease',
               }}
             >
               {/* 1. Cờ (Flag SVG) */}
@@ -223,16 +227,16 @@ export default function StatusBar({ activeTab = 'dashboard' }: StatusBarProps) {
                 {label}
               </span>
 
-              {/* 3. Thời gian / Trạng thái (Countdown / Status) */}
+              {/* 3. Thời gian đếm ngược (Countdown) */}
               <span style={{
                 fontSize: 11,
-                fontWeight: 600,
+                fontWeight: open ? 700 : 600,
                 fontFamily: 'var(--font-mono)',
                 fontVariantNumeric: 'tabular-nums',
                 color: open ? 'var(--color-accent)' : 'var(--color-text-1)',
                 flexShrink: 0,
               }}>
-                {open ? 'MỞ' : formatCountdown(minsUntilOpen)}
+                {formatCountdown(minsRemaining)}
               </span>
             </div>
           );
