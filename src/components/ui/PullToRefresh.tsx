@@ -184,79 +184,6 @@ export default function PullToRefresh({
     };
   }, [isRefreshing, pullDistance, doRefresh]);
 
-  // Desktop Mouse Drag Testing Support
-  const mouseState = useRef({
-    active: false,
-    startY: 0,
-    startX: 0,
-    isPulling: false,
-    isLocked: false,
-  });
-
-  const onMouseDown = (e: React.MouseEvent) => {
-    if (isRefreshing || e.button !== 0) return;
-    const el = containerRef.current;
-    if (!el || el.scrollTop > 0) return;
-
-    getAudioContext();
-    mouseState.current = {
-      active: true,
-      startY: e.clientY,
-      startX: e.clientX,
-      isPulling: false,
-      isLocked: false,
-    };
-    hasTriggeredHapticRef.current = false;
-  };
-
-  const onMouseMove = (e: React.MouseEvent) => {
-    const s = mouseState.current;
-    const el = containerRef.current;
-    if (!s.active || !el || isRefreshing) return;
-
-    const dy = e.clientY - s.startY;
-    const dx = e.clientX - s.startX;
-
-    if (!s.isLocked) {
-      const absX = Math.abs(dx);
-      const absY = Math.abs(dy);
-      if (absX >= 5 || absY >= 5) {
-        s.isLocked = true;
-        s.isPulling = absY > absX && dy > 0 && el.scrollTop <= 0;
-      }
-    }
-
-    if (s.isPulling && dy > 0 && el.scrollTop <= 0) {
-      const damp = Math.min(MAX_PULL, Math.pow(dy, 0.8) * 1.35);
-      setPullDistance(damp);
-
-      if (damp >= PULL_THRESHOLD) {
-        if (!hasTriggeredHapticRef.current) {
-          playHapticFeedback();
-          hasTriggeredHapticRef.current = true;
-        }
-      } else {
-        hasTriggeredHapticRef.current = false;
-      }
-    }
-  };
-
-  const onMouseUp = () => {
-    const s = mouseState.current;
-    if (!s.active) return;
-    s.active = false;
-
-    if (s.isPulling) {
-      if (pullDistance >= PULL_THRESHOLD) {
-        doRefresh();
-      } else {
-        setPullDistance(0);
-      }
-    }
-    s.isPulling = false;
-    s.isLocked = false;
-  };
-
   const progressRatio = Math.min(1, pullDistance / PULL_THRESHOLD);
   const isPullingDown = pullDistance > 4;
   const showIndicator = isPullingDown || isRefreshing;
@@ -275,10 +202,6 @@ export default function PullToRefresh({
         position: 'relative',
         overscrollBehavior: 'contain',
       }}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseUp}
     >
       {/* ─── Minimalist Pure Circular Ring Loader (NO TEXT) ─── */}
       <div

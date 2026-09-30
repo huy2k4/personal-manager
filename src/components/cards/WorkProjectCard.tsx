@@ -101,8 +101,8 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
     const moveDist = Math.hypot(endTouch.clientX - start.x, endTouch.clientY - start.y);
     const duration = Date.now() - start.time;
 
-    // Filter out scroll/swipe gestures: must move < 28px and be released within 450ms
-    if (moveDist < 28 && duration < 450) {
+    // Filter out scroll/swipe gestures: must move < 20px and be released within 400ms
+    if (moveDist < 20 && duration < 400) {
       const now = Date.now();
       const lastTap = lastTapRef.current;
 
@@ -110,8 +110,8 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
         const timeDiff = now - lastTap.time;
         const tapDist = Math.hypot(endTouch.clientX - lastTap.x, endTouch.clientY - lastTap.y);
 
-        // Valid double tap window: 40ms to 650ms and within 60px
-        if (timeDiff >= 40 && timeDiff <= 650 && tapDist < 60) {
+        // Valid double tap window: 40ms to 600ms and within 50px
+        if (timeDiff >= 40 && timeDiff <= 600 && tapDist < 50) {
           lastTouchFlipTimeRef.current = Date.now();
           setIsFlipped((prev) => {
             const next = !prev;
@@ -136,6 +136,10 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
         x: endTouch.clientX,
         y: endTouch.clientY,
       };
+    } else {
+      // Finger moved -> user was scrolling -> clear tap reference
+      lastTapRef.current = null;
+      touchStartRef.current = null;
     }
   };
 
@@ -453,39 +457,23 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
   return (
     <div
       style={{
-        perspective: 1200,
         width: '100%',
-        userSelect: 'none',
-        touchAction: 'manipulation',
+        touchAction: 'pan-y',
+        userSelect: isFlipped ? 'auto' : 'none',
       }}
       onDoubleClick={handleDoubleClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
-          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        }}
-      >
-        {/* ══════════════════════════════════════════════════════════
+      {!isFlipped ? (
+        /* ══════════════════════════════════════════════════════════
             FRONT SIDE (Regular View)
-            ══════════════════════════════════════════════════════════ */}
+            ══════════════════════════════════════════════════════════ */
         <div
           className="card bento-full"
           style={{
-            position: isFlipped ? 'absolute' : 'relative',
-            top: 0,
-            left: 0,
-            right: 0,
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
             minHeight: 200,
             cursor: 'default',
-            pointerEvents: isFlipped ? 'none' : 'auto',
           }}
         >
           {/* Header (Same on both sides) */}
@@ -710,28 +698,19 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
             </div>
           )}
         </div>
-
-        {/* ══════════════════════════════════════════════════════════
+      ) : (
+        /* ══════════════════════════════════════════════════════════
             BACK SIDE (Inline Flip Form for Direct Input)
-            ══════════════════════════════════════════════════════════ */}
+            ══════════════════════════════════════════════════════════ */
         <div
           className="card bento-full"
           style={{
-            position: isFlipped ? 'relative' : 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
             background: 'var(--color-surface)',
             border: '2px solid var(--color-accent)',
             boxShadow: '0 8px 30px rgba(37, 99, 235, 0.15)',
-            zIndex: 10,
-            pointerEvents: isFlipped ? 'auto' : 'none',
           }}
         >
           {/* Back Header (Exact same Title / Logo as Front) */}
@@ -1569,7 +1548,7 @@ export default function WorkProjectCard({ project, onUpdate }: WorkProjectCardPr
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
