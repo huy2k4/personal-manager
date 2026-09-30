@@ -4,20 +4,11 @@ import {
   AlertTriangle,
   Clock,
   Flame,
-  Briefcase,
   ChevronRight,
-  ArrowUpRight,
   Calendar,
-  FileText,
 } from 'lucide-react';
 import type { NavId } from '@/components/layout/BottomNav';
-import { useRefresh } from '@/lib/refresh-context';
-import {
-  contracts,
-  languages,
-  cryptoAssets,
-  workProjects,
-} from '@/lib/mock-data';
+import { languages } from '@/lib/mock-data';
 import WorkProgressCard from '@/components/cards/WorkProgressCard';
 import CryptoChartCard from '@/components/cards/CryptoChartCard';
 
@@ -26,11 +17,7 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({ onNavigate }: DashboardViewProps) {
-  const { isRefreshing } = useRefresh();
-  const totalCryptoValue = cryptoAssets.reduce((s, a) => s + a.value, 0);
-
   const jaLang = languages.find((l) => l.lang === 'JA');
-  const enLang = languages.find((l) => l.lang === 'EN');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -39,77 +26,6 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
 
       {/* ─── 2. Crypto Chart Card (4x1) ─── */}
       <CryptoChartCard />
-
-      {/* ─── 3. Khối KPI Thống kê 2x2 ─── */}
-      <div className="bento-grid" style={{ padding: 0 }}>
-        {/* KPI 1: 3 Dự án Việc */}
-        <div className="kpi-card" onClick={() => onNavigate('work')} style={{ cursor: 'pointer' }}>
-          <div className="kpi-top">
-            <span className="kpi-title">Dự án Việc</span>
-            <Briefcase size={14} color="var(--color-accent)" />
-          </div>
-          <div>
-            <div className="kpi-val">{isRefreshing ? '---' : `${workProjects.length} Active`}</div>
-            <div className="kpi-sub" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <img
-                src="/maersk-logo.png"
-                alt="Maersk"
-                style={{ height: 11, width: 'auto', objectFit: 'contain' }}
-              />
-              <span>• Betonamu •</span>
-              <img
-                src="/NamKhanh.png"
-                alt="Nam Khánh"
-                style={{ height: 11, width: 'auto', objectFit: 'contain' }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 2: Tài sản Crypto */}
-        <div className="kpi-card" onClick={() => onNavigate('finance')} style={{ cursor: 'pointer' }}>
-          <div className="kpi-top">
-            <span className="kpi-title">Crypto</span>
-            <span className="badge badge-success" style={{ padding: '1px 5px', fontSize: 10 }}>
-              <ArrowUpRight size={10} /> +2.1%
-            </span>
-          </div>
-          <div>
-            <div className="kpi-val">{isRefreshing ? '---' : `$${totalCryptoValue.toLocaleString()}`}</div>
-            <div className="kpi-sub">3 đồng coin nắm giữ</div>
-          </div>
-        </div>
-
-        {/* KPI 3: Hợp đồng Freelance */}
-        <div className="kpi-card" onClick={() => onNavigate('finance')} style={{ cursor: 'pointer' }}>
-          <div className="kpi-top">
-            <span className="kpi-title">Hợp đồng</span>
-            <FileText size={14} color="var(--color-accent)" />
-          </div>
-          <div>
-            <div className="kpi-val">{isRefreshing ? '---' : `${contracts.length} Hợp đồng`}</div>
-            <div className="kpi-sub">
-              {contracts.filter((c) => c.status === 'active').length} dự án đang triển khai
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 4: Học tập & Streak */}
-        <div className="kpi-card" onClick={() => onNavigate('study')} style={{ cursor: 'pointer' }}>
-          <div className="kpi-top">
-            <span className="kpi-title">Ngoại ngữ</span>
-            <Flame size={14} color="var(--color-warn)" />
-          </div>
-          <div>
-            <div className="kpi-val">
-              {isRefreshing ? '---' : (
-                <>JA {jaLang?.streak}d <span style={{ fontSize: 14, color: 'var(--color-text-3)' }}>• EN {enLang?.streak}d</span></>
-              )}
-            </div>
-            <div className="kpi-sub">Chuỗi học liên tục</div>
-          </div>
-        </div>
-      </div>
 
       {/* ─── 3. Khối Cảnh báo & Chú ý quan trọng ─── */}
       <div className="card bento-full">
